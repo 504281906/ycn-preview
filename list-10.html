@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>专题库 - 专题列表</title>
+<style>
+:root {
+    --primary: #1677ff;
+    --primary-hover: #4096ff;
+    --primary-light: #e6f4ff;
+    --success: #52c41a;
+    --success-light: #f6ffed;
+    --warning: #faad14;
+    --warning-light: #fff7e6;
+    --error: #ff4d4f;
+    --error-light: #fff1f0;
+    --text: #262626;
+    --text-secondary: #595959;
+    --text-tertiary: #8c8c8c;
+    --text-quaternary: #bfbfbf;
+    --border: #d9d9d9;
+    --border-light: #f0f0f0;
+    --bg: #f0f2f5;
+    --bg-white: #ffffff;
+    --shadow: 0 1px 2px rgba(0,0,0,0.03), 0 1px 6px -1px rgba(0,0,0,0.02);
+    --radius: 8px;
+    --radius-sm: 6px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+    background: var(--bg);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    color: var(--text);
+    font-size: 14px;
+}
+
+/* 侧边栏 */
+.sidebar {
+    width: 220px;
+    background: #001529;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+}
+
+.sidebar-logo {
+    padding: 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-logo h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.sidebar-logo span {
+    font-size: 12px;
+    color: var(--primary);
+    display: block;
+    margin-top: 4px;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 12px 0;
+    overflow-y: auto;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    color: rgba(255,255,255,0.65);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    gap: 10px;
+    border-bottom: 2px solid transparent;
+}
+
+.nav-item:hover {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.9);
+}
+
+.nav-item.active {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border-bottom-color: var(--primary);
+}
+
+.nav-item .icon { width: 20px; text-align: center; font-size: 14px; flex-shrink: 0; }
+.nav-item .text { flex: 1; }
+
+.nav-sub {
+    margin-left: 32px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    margin-top: 4px;
+    margin-bottom: 8px;
+}
+
+.nav-sub-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    gap: 8px;
+    border-radius: var(--radius-sm);
+}
+
+.nav-sub-item:hover {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.9);
+}
+
+.nav-sub-item.active {
+    background: rgba(22,119,255,0.2);
+    color: var(--primary);
+}
+
+.nav-sub-item .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    flex-shrink: 0;
+}
+
+.nav-sub-item.active .dot { background: var(--primary); }
+
+.sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.user-name { font-size: 13px; color: rgba(255,255,255,0.8); }
+.user-role { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+/* 主内容区 */
+.main {
+    margin-left: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.topbar {
+    height: 56px;
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    justify-content: space-between;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.topbar-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.topbar-actions { display: flex; gap: 12px; }
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+/* 卡片 */
+.card {
+    background: var(--bg-white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-light);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+/* 按钮 */
+.btn {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+}
+.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-default {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+.btn-default:hover { border-color: var(--primary); color: var(--primary); }
+
+.btn-danger {
+    background: var(--error-light);
+    color: var(--error);
+    border: 1px solid #ffccc7;
+}
+.btn-danger:hover { background: var(--error); color: #fff; }
+
+.btn-compact {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+/* 状态标签 */
+.status-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    border: 1px solid;
+}
+.status-active {
+    background: var(--success-light);
+    color: var(--success);
+    border-color: #b7eb8f;
+}
+.status-inactive {
+    background: #f5f5f5;
+    color: var(--text-tertiary);
+    border-color: var(--border);
+}
+
+/* 表格 */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.data-table th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: #fafafa;
+    border-bottom: 1px solid var(--border-light);
+}
+.data-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border-light);
+}
+.data-table tr:hover td { background: #f8f9ff; }
+
+/* 操作链接 */
+.action-link {
+    color: var(--primary);
+    cursor: pointer;
+    margin: 0 6px;
+    font-size: 12px;
+    background: none;
+    border: none;
+    display: inline-block;
+}
+.action-link:hover { text-decoration: underline; }
+.action-link.danger { color: var(--error); }
+.action-link.disabled {
+    color: var(--text-quaternary);
+    cursor: not-allowed;
+}
+.action-link.disabled:hover { text-decoration: none; }
+
+/* 筛选栏 */
+.filter-bar {
+    padding: 12px 20px;
+    display: flex;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-light);
+    flex-wrap: wrap;
+}
+.filter-input {
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0 12px;
+    font-size: 14px;
+    outline: none;
+    background: var(--bg-white);
+    width: 180px;
+}
+.filter-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(22,119,255,0.1);
+}
+.filter-select {
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0 12px;
+    font-size: 14px;
+    outline: none;
+    background: var(--bg-white);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238c8c8c' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+.filter-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(22,119,255,0.1);
+}
+
+/* 分页 */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-light);
+}
+.pagination-info { font-size: 12px; color: var(--text-tertiary); }
+.pagination-buttons { display: flex; gap: 8px; }
+.btn-page { height: 30px; padding: 0 10px; font-size: 12px; border-radius: 4px; }
+
+/* 权限提示 */
+.permission-tip {
+    background: var(--warning-light);
+    border: 1px solid #ffd591;
+    padding: 8px 16px;
+    margin: 0 20px 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: #d48806;
+}
+</style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>数据平台</h1>
+        <span>高质量数据集</span>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item active"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-sub">
+            <div class="nav-sub-item active" onclick="location.href='专题列表.html'"><span class="dot"></span><span>专题列表</span></div>
+            <div class="nav-sub-item" onclick="location.href='数据.html'"><span class="dot"></span><span>新增专题</span></div>
+            <div class="nav-sub-item" onclick="location.href='数据维护.html'"><span class="dot"></span><span>数据维护</span></div>
+        </div>
+        <div class="nav-item"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">张</div>
+            <div><div class="user-name">张三</div><div class="user-role" id="roleDisplay">管理员</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-title">专题库 / 专题列表</div>
+        <div class="topbar-actions">
+            <button class="btn btn-default btn-compact">通知</button>
+            <button class="btn btn-default btn-compact" id="switchRoleBtn">切换角色</button>
+        </div>
+    </div>
+    <div class="content">
+        <div class="card">
+            <div class="card-header">
+                <h3>专题列表</h3>
+                <button class="btn btn-primary btn-compact" onclick="location.href='新增专题.html'">+ 新建专题</button>
+            </div>
+            <div class="filter-bar">
+                <input type="text" id="searchInput" class="filter-input" placeholder="专题名称 / ID">
+                <select id="statusFilter" class="filter-select" style="width: 110px;">
+                    <option value="">全部状态</option>
+                    <option value="启用">启用</option>
+                    <option value="停用">停用</option>
+                </select>
+                <button class="btn btn-default btn-compact" id="searchBtn">查询</button>
+            </div>
+            <div id="listPermissionTip" class="permission-tip" style="display: none;">您只有只读权限，无法进行编辑、停用、删除操作</div>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>专题ID</th><th>专题名称</th><th>数据集数</th><th>数据量</th><th>可见范围</th><th>状态</th><th>操作</th></tr>
+                    </thead>
+                    <tbody id="topicTableBody"></tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <div class="pagination-info">共 <span id="totalCount">0</span> 个专题</div>
+                <div class="pagination-buttons">
+                    <button class="btn btn-default btn-page" disabled>‹ 上一页</button>
+                    <button class="btn btn-primary btn-page">1</button>
+                    <button class="btn btn-default btn-page" disabled>下一页 ›</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 权限
+let currentRole = "admin";
+function canEdit() { return currentRole === 'admin' || currentRole === 'editor'; }
+function getRoleText() { return currentRole === 'admin' ? '管理员' : (currentRole === 'editor' ? '编辑员' : '只读用户'); }
+
+// 专题数据
+let topics = JSON.parse(localStorage.getItem('topics')) || [
+    { id: "TOPIC-001", name: "传统文化活动专题", icon: "传", datasetCount: 5, totalRows: 3240, scope: "公开", status: "启用" },
+    { id: "TOPIC-002", name: "社区文化服务专题", icon: "社", datasetCount: 3, totalRows: 1850, scope: "公开", status: "启用" },
+    { id: "TOPIC-003", name: "数字文化与科技专题", icon: "数", datasetCount: 2, totalRows: 960, scope: "仅团队", status: "停用" },
+    { id: "TOPIC-004", name: "文化惠民活动专题", icon: "惠", datasetCount: 4, totalRows: 2100, scope: "公开", status: "启用" }
+];
+
+function saveTopics() { localStorage.setItem('topics', JSON.stringify(topics)); }
+
+function renderList() {
+    let search = document.getElementById("searchInput").value.toLowerCase();
+    let statusVal = document.getElementById("statusFilter").value;
+    let filtered = topics.filter(t => (t.name.toLowerCase().includes(search) || t.id.toLowerCase().includes(search)) && (statusVal === "" || t.status === statusVal));
+    let tbody = document.getElementById("topicTableBody");
+    tbody.innerHTML = "";
+    let editable = canEdit();
+    filtered.forEach(t => {
+        let statusClass = t.status === "启用" ? "status-active" : "status-inactive";
+        let editBtn = editable ? `<button class="action-link" onclick="editTopic('${t.id}')">编辑</button>` : `<span class="action-link disabled">编辑</span>`;
+        let toggleBtn = editable ? `<button class="action-link" onclick="toggleStatus('${t.id}')">${t.status === "启用" ? "停用" : "启用"}</button>` : `<span class="action-link disabled">${t.status === "启用" ? "停用" : "启用"}</span>`;
+        let maintainBtn = `<button class="action-link" onclick="openMaintain('${t.id}')">数据维护</button>`;
+        let deleteBtn = editable ? `<button class="action-link danger" onclick="deleteTopic('${t.id}')">删除</button>` : `<span class="action-link danger disabled">删除</span>`;
+        let row = `<tr><td>${t.id}</td><td><strong>${t.name}</strong></td><td>${t.datasetCount}</td><td>${t.totalRows.toLocaleString()}</td><td>${t.scope}</td><td><span class="status-tag ${statusClass}">${t.status}</span></td><td>${editBtn} ${toggleBtn} ${maintainBtn} ${deleteBtn}</td></tr>`;
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+    document.getElementById("totalCount").innerText = filtered.length;
+}
+
+function editTopic(id) {
+    if (!canEdit()) return alert("无权限编辑");
+    localStorage.setItem('editTopicId', id);
+    location.href = '新增专题.html';
+}
+
+function toggleStatus(id) {
+    if (!canEdit()) return alert("无权限修改状态");
+    let topic = topics.find(t => t.id === id);
+    if (topic) { topic.status = topic.status === "启用" ? "停用" : "启用"; saveTopics(); renderList(); }
+}
+
+function deleteTopic(id) {
+    if (!canEdit()) return alert("无权限删除");
+    if (confirm(`确定删除专题 ${id} 吗？`)) {
+        topics = topics.filter(t => t.id !== id);
+        saveTopics();
+        localStorage.removeItem(`maintainData_${id}`);
+        renderList();
+    }
+}
+
+function openMaintain(id) {
+    localStorage.setItem('maintainTopicId', id);
+    location.href = '数据维护.html';
+}
+
+function updateRoleUI() {
+    document.getElementById("roleDisplay").innerText = getRoleText();
+    document.getElementById("listPermissionTip").style.display = !canEdit() ? "block" : "none";
+    renderList();
+}
+
+function switchRole() {
+    let roles = ["admin", "editor", "viewer"];
+    let idx = roles.indexOf(currentRole);
+    currentRole = roles[(idx + 1) % 3];
+    updateRoleUI();
+    alert(`角色已切换为: ${getRoleText()}`);
+}
+
+document.getElementById("searchBtn").onclick = () => renderList();
+document.getElementById("switchRoleBtn").onclick = switchRole;
+document.getElementById("searchInput").addEventListener("keypress", (e) => { if (e.key === "Enter") renderList(); });
+
+// 同步其他页面的数据变更
+window.addEventListener('storage', (e) => {
+    if (e.key === 'topics') { topics = JSON.parse(e.newValue) || topics; renderList(); }
+});
+
+renderList();
+updateRoleUI();
+</script>
+</body>
+</html>

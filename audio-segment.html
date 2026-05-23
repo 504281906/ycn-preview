@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频分割 - 独立标注工作台</title>
+    <style>
+        :root {
+            --primary: #1677ff;
+            --primary-hover: #4096ff;
+            --primary-light: #e6f4ff;
+            --success: #52c41a;
+            --success-light: #f6ffed;
+            --warning: #faad14;
+            --warning-light: #fff7e6;
+            --error: #ff4d4f;
+            --text: #262626;
+            --text-secondary: #595959;
+            --text-tertiary: #8c8c8c;
+            --border: #d9d9d9;
+            --border-light: #f0f0f0;
+            --bg: #fafafa;
+            --bg-white: #ffffff;
+            --radius: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Left Sidebar */
+        .sidebar { width:220px; background:#1a1a2e; display:flex; flex-direction:column; height:100vh; position:fixed; left:0; top:0; z-index:100; }
+.sidebar-logo { padding:24px 20px; border-bottom:1px solid rgba(255,255,255,0.1); }
+.sidebar-logo h1 { font-size:16px; color:#fff; font-weight:600; }
+.sidebar-logo span { font-size:12px; color:var(--primary); display:block; margin-top:4px; }
+.sidebar-nav { flex:1; padding:12px 0; overflow-y:auto; }
+.nav-item { display:flex; align-items:center; padding:12px 20px; color:rgba(255,255,255,0.85); font-size:14px; cursor:pointer; transition:all 0.2s; gap:10px; user-select:none; font-weight:600; }
+.nav-item:hover { background:rgba(255,255,255,0.05); color:#fff; }
+.nav-item.has-sub { justify-content:flex-start; font-weight:600; color:#fff; text-decoration:none; border-right:none; }
+.nav-item.has-sub.open { background:none; color:#fff; border-right:none; text-decoration:none; }
+.nav-item.has-sub.open .icon { color:var(--primary); }
+.nav-item.active { background:none; color:#fff; border-right:none; text-decoration:none; }
+.nav-item .icon { width:20px; text-align:center; font-size:14px; font-weight:bold; color:#8c8c8c; flex-shrink:0; }
+.nav-item .text { flex:1; }
+.nav-item .arrow { font-size:10px; color:rgba(255,255,255,0.4); transition:transform 0.2s; }
+.nav-item.has-sub.open .arrow { transform:rotate(90deg); }
+.nav-sub-list { display:none; background:rgba(0,0,0,0.15); }
+.nav-sub-list.open { display:block; }
+.nav-sub-item { display:flex; align-items:center; padding:10px 20px 10px 50px; color:rgba(255,255,255,0.7); font-size:13px; cursor:pointer; transition:all 0.2s; gap:8px; text-decoration:none; }
+.nav-sub-item:hover { color:#fff; background:rgba(255,255,255,0.05); }
+.nav-sub-item.active { color:var(--primary); }
+.nav-sub-item .dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.3); flex-shrink:0; }
+.nav-sub-item.active .dot { background:var(--primary); }
+.sidebar-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,0.1); }
+.user-info { display:flex; align-items:center; gap:10px; }
+.user-avatar { width:32px; height:32px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; }
+.user-name { font-size:13px; color:rgba(255,255,255,0.8); }
+.user-role { font-size:11px; color:rgba(255,255,255,0.4); }
+
+
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+<div class="sidebar-logo">
+<h1>数据集管理平台</h1>
+<span>高质量数据集</span>
+</div>
+<div class="sidebar-nav">
+<a class="nav-item" href="工作台.html"><span class="icon">◈</span><span class="text">工作台</span></a>
+<div class="nav-group">
+<a class="nav-item has-sub open" href="数据资源.html"><span class="icon">☰</span><span class="text">数据资源</span><span class="arrow">▶</span></a>
+<div class="nav-sub-list open">
+<a class="nav-sub-item" href="系统导入.html">系统导入</a>
+<a class="nav-sub-item" href="中台导入.html">中台导入</a>
+<a class="nav-sub-item" href="本地导入.html">本地导入</a>
+<a class="nav-sub-item" href="互联网采集.html">互联网采集</a>
+<a class="nav-sub-item" href="资源存储.html">资源存储</a>
+</div>
+</div>
+<div class="nav-group">
+<a class="nav-item has-sub open" href="数据集管理.html"><span class="icon">▦</span><span class="text">数据集管理</span><span class="arrow">▶</span></a>
+<div class="nav-sub-list open">
+<a class="nav-sub-item" href="原始数据集.html">原始数据集</a>
+<a class="nav-sub-item" href="标注数据集.html">标注数据集</a>
+</div>
+</div>
+<div class="nav-group">
+<a class="nav-item has-sub open" href="标注中心.html"><span class="icon">✎</span><span class="text">标注中心</span><span class="arrow">▶</span></a>
+<div class="nav-sub-list open">
+<a class="nav-sub-item" href="任务管理.html">任务管理</a>
+<a class="nav-sub-item" href="标注大厅.html">标注大厅</a>
+<a class="nav-sub-item" href="模板管理.html">模板管理</a>
+</div>
+</div>
+<div class="nav-group">
+<a class="nav-item has-sub open" href="专题库.html"><span class="icon">▤</span><span class="text">专题库</span><span class="arrow">▶</span></a>
+<div class="nav-sub-list open">
+<a class="nav-sub-item" href="专题管理.html">专题管理</a>
+<a class="nav-sub-item" href="专题视图.html">专题视图</a>
+</div>
+</div>
+<a class="nav-item" href="系统设置.html"><span class="icon">⚙</span><span class="text">系统设置</span></a>
+</div>
+</div>
+<div class="main">
+        <div class="topbar">
+            <div class="topbar-breadcrumb">
+                <span>标注中心</span><span>›</span><span>标注任务</span><span>›</span>
+                <span>音频-音频分割</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-default" onclick="history.back()">返回列表</button>
+                <button class="btn btn-primary">提交全部</button>
+            </div>
+        </div>
+
+        <div class="workbench">
+            <div class="wb-header">
+                <div class="wb-header-left">
+                    <div class="wb-title">音频分割 · 粤剧音频数据集</div>
+                    <div class="wb-meta">
+                        <span>任务ID：TASK-AUDIO-003</span>
+                        <span>模板：音频分割模板</span>
+                        <span>已分割：<span id="segmentCount">3</span>/60</span>
+                    </div>
+                </div>
+                <div class="wb-header-right">
+                    <div style="font-size:12px;color:var(--text-secondary);">
+                        标注员：<span style="color:var(--text);font-weight:500;">张三</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider-1"></div>
+
+            <div class="wb-nav">
+                <div class="wb-nav-item active">待分割 (15)</div>
+                <div class="wb-nav-item">已分割 (45)</div>
+                <div class="wb-nav-item">全部数据 (60)</div>
+            </div>
+
+            <div class="divider-2"></div>
+
+            <div class="wb-body">
+                <div class="waveform-area">
+                    <div class="waveform-main">
+                        <div class="waveform-title">音频波形</div>
+                        <div class="waveform-canvas-wrapper" id="waveformWrapper">
+                            <canvas id="waveformCanvas" class="waveform-canvas" width="800" height="60"></canvas>
+                            <div class="selection-overlay">
+                                <div class="selection-rect" id="selectionRect"></div>
+                                <div id="segmentHighlights"></div>
+                                <div class="playhead" id="playhead" style="left: 0%;"></div>
+                            </div>
+                        </div>
+                        <div class="time-axis">
+                            <span>0:00</span><span>1:00</span><span>2:00</span><span>3:00</span><span>4:00</span><span>5:00</span><span>6:00</span><span>7:00</span><span>7:35</span>
+                        </div>
+                    </div>
+
+                    <div class="recognition-bar">
+                        <label class="switch-label">
+                            <span style="font-size:13px; font-weight:500;">🎤 音频识别</span>
+                            <div class="switch">
+                                <input type="checkbox" id="recognitionSwitch" onchange="toggleRecognition(this.checked)">
+                                <span class="slider"></span>
+                            </div>
+                        </label>
+                        <div class="recognition-textbox" style="flex:1; display:none;" id="recognitionBox">
+                            <textarea id="recognitionText" rows="2" placeholder="开启音频识别后，划选音频区域将自动识别文本内容，可编辑修改..."></textarea>
+                            <div class="recognition-hint">
+                                <span class="dot"></span>
+                                <span>识别内容可编辑，保存后将关联至当前片段</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="playback-controls">
+                        <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+                        <div class="playback-info">
+                            <div class="playback-time" id="selectedTimeInfo">未选中区域</div>
+                            <div class="playback-duration" id="playbackDuration">00:00 / 07:35</div>
+                        </div>
+                        <div class="speed-group">
+                            <span>倍速</span>
+                            <button class="speed-btn" onclick="setSpeed(0.5)">0.5x</button>
+                            <button class="speed-btn active" onclick="setSpeed(1.0)">1.0x</button>
+                            <button class="speed-btn" onclick="setSpeed(1.5)">1.5x</button>
+                            <button class="speed-btn" onclick="setSpeed(2.0)">2.0x</button>
+                        </div>
+                    </div>
+
+                    <div class="segment-toolbar">
+                        <span class="segment-toolbar-label">为选中区域添加标签：</span>
+                        <button class="tag-btn tag-btn-blue" onclick="setActiveTag(this, '粤剧', 'blue')">粤剧</button>
+                        <button class="tag-btn tag-btn-green" onclick="setActiveTag(this, '非遗', 'green')">非遗</button>
+                        <button class="tag-btn tag-btn-red" onclick="setActiveTag(this, '演唱', 'red')">演唱</button>
+                        <button class="tag-btn tag-btn-purple" onclick="setActiveTag(this, '伴奏', 'purple')">伴奏</button>
+                        <button class="tag-btn tag-btn-orange" onclick="setActiveTag(this, '念白', 'orange')">念白</button>
+                        <span class="current-segment-info" id="currentSelectionInfo">请在波形上拖拽选择区域</span>
+                    </div>
+                </div>
+
+                <div class="wb-sidebar">
+                    <div class="wb-sidebar-section">
+                        <div class="wb-sidebar-title">
+                            已标记片段
+                            <span class="count-badge" id="segmentCountBadge">3</span>
+                        </div>
+                        <div class="segment-list" id="segmentList"></div>
+                    </div>
+
+                    <div class="wb-sidebar-section">
+                        <div class="wb-sidebar-title">标注进度</div>
+                        <div class="wb-sidebar-item"><span class="label">总音频数</span><span class="value">60</span></div>
+                        <div class="wb-sidebar-item"><span class="label">已分割</span><span class="value green" id="sidebarSegmentCount">3</span></div>
+                        <div class="wb-sidebar-item"><span class="label">待分割</span><span class="value yellow">15</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 75%;"></div></div>
+                        <div class="progress-text">整体进度 75%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wb-footer">
+                <div class="wb-footer-btns">
+                    <button class="btn btn-default" onclick="prevAudio()">上一条</button>
+                    <button class="btn btn-primary" onclick="confirmSegments()">确认分割</button>
+                    <button class="btn btn-default" onclick="skipAudio()">跳过</button>
+                    <button class="btn btn-default" onclick="releaseTask()">释放任务</button>
+                </div>
+                <div class="wb-page-info">第 1/15 条 · 待分割</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const totalDuration = 455;
+        let selectionStart = null;
+        let selectionEnd = null;
+        let isDragging = false;
+        let activeTag = { name: '粤剧', color: 'blue' };
+        let recognitionEnabled = false;
+        
+        const mockRecognitionResults = {
+            '00:04-00:11': '张先生反映培训课程时间安排不合理，希望调整至周末。',
+            '00:12-00:28': '经馆方研究决定，自下月起全面实行周末开放制度，以满足群众需求。',
+            '00:32-00:41': '建议在越秀区文化中心增设夜间开放时段，服务更多上班族。',
+            '01:05-01:22': '广东省文化馆组织的粤剧进社区活动深受社区居民喜爱。'
+        };
+        
+        function simulateRecognition(startPercent, endPercent) {
+            const startTime = percentToTime(startPercent);
+            const endTime = percentToTime(endPercent);
+            const key = `${startTime}-${endTime}`;
+            for (const [range, text] of Object.entries(mockRecognitionResults)) {
+                if (key === range) return text;
+            }
+            return `[音频片段] 这是 ${startTime} - ${endTime} 的自动识别文本内容，您可以进行编辑修改。`;
+        }
+        
+        let segments = [
+            { id: 'seg_1', startPercent: 5.5, endPercent: 12.0, startTime: '00:04', endTime: '00:11', duration: 7, tags: ['粤剧', '非遗'], text: '张先生反映培训课程时间安排不合理，希望调整至周末。' },
+            { id: 'seg_2', startPercent: 16.5, endPercent: 23.5, startTime: '00:12', endTime: '00:28', duration: 16, tags: ['伴奏'], text: '经馆方研究决定，自下月起全面实行周末开放制度，以满足群众需求。' },
+            { id: 'seg_3', startPercent: 28.0, endPercent: 35.0, startTime: '00:32', endTime: '00:41', duration: 9, tags: ['演唱'], text: '建议在越秀区文化中心增设夜间开放时段，服务更多上班族。' }
+        ];
+        
+        let nextSegmentId = 4;
+        let canvas, ctx;
+        
+        function percentToTime(percent) {
+            const seconds = (percent / 100) * totalDuration;
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function percentToSeconds(percent) {
+            return (percent / 100) * totalDuration;
+        }
+        
+        function drawWaveform() {
+            if (!canvas || !ctx) return;
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+            
+            const barCount = Math.min(100, Math.floor(width / 5));
+            const barWidth = width / barCount;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            for (let i = 0; i < barCount; i++) {
+                const x = i * barWidth;
+                const barHeight = 8 + Math.random() * 28;
+                const percent = i / barCount * 100;
+                
+                let color = 'rgba(22, 119, 255, 0.35)';
+                for (const seg of segments) {
+                    if (percent >= seg.startPercent && percent <= seg.endPercent) {
+                        color = 'rgba(82, 196, 26, 0.5)';
+                        break;
+                    }
+                }
+                ctx.fillStyle = color;
+                ctx.fillRect(x, height - barHeight, Math.max(2, barWidth - 1), barHeight);
+            }
+            
+            for (const seg of segments) {
+                const x1 = (seg.startPercent / 100) * width;
+                const x2 = (seg.endPercent / 100) * width;
+                ctx.beginPath();
+                ctx.strokeStyle = '#52c41a';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.moveTo(x1, 0);
+                ctx.lineTo(x1, height);
+                ctx.stroke();
+                ctx.moveTo(x2, 0);
+                ctx.lineTo(x2, height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+        
+        function renderSegmentHighlights() {
+            const container = document.getElementById('segmentHighlights');
+            if (!container) return;
+            let html = '';
+            for (const seg of segments) {
+                html += `<div class="segment-highlight" style="left: ${seg.startPercent}%; width: ${seg.endPercent - seg.startPercent}%;"></div>`;
+            }
+            container.innerHTML = html;
+        }
+        
+        function renderSegmentList() {
+            const container = document.getElementById('segmentList');
+            if (!container) return;
+            if (segments.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-tertiary);font-size:12px;padding:20px;text-align:center;">暂无标记片段<br><span style="font-size:11px;">在波形上拖拽选择区域后点击标签添加</span></div>';
+                return;
+            }
+            container.innerHTML = segments.map(seg => `
+                <div class="segment-item" onclick="selectSegment('${seg.id}')">
+                    <div class="segment-item-header">
+                        <span class="segment-time">${seg.startTime} — ${seg.endTime}</span>
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <span class="segment-duration">${seg.duration}秒</span>
+                            <span class="delete-segment" onclick="event.stopPropagation(); deleteSegment('${seg.id}')" title="删除片段">✕</span>
+                        </span>
+                    </div>
+                    <div class="segment-tags">
+                        ${seg.tags.map(tag => {
+                            let colorClass = '';
+                            if (tag === '粤剧') colorClass = 'segment-tag-blue';
+                            else if (tag === '非遗') colorClass = 'segment-tag-green';
+                            else if (tag === '演唱') colorClass = 'segment-tag-red';
+                            else if (tag === '伴奏') colorClass = 'segment-tag-purple';
+                            else if (tag === '念白') colorClass = 'segment-tag-orange';
+                            return `<span class="segment-tag ${colorClass}">${tag}</span>`;
+                        }).join('')}
+                    </div>
+                    ${recognitionEnabled && seg.text ? `
+                        <div class="segment-text-preview">
+                            <span class="preview-icon">📝</span>
+                            <span class="preview-content" title="${seg.text.replace(/"/g, '&quot;')}">${seg.text.length > 80 ? seg.text.substring(0, 80) + '...' : seg.text}</span>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+            document.getElementById('segmentCount').textContent = segments.length;
+            document.getElementById('sidebarSegmentCount').textContent = segments.length;
+            document.getElementById('segmentCountBadge').textContent = segments.length;
+        }
+        
+        function addSegment(startPercent, endPercent, tags) {
+            if (startPercent === null || endPercent === null || Math.abs(startPercent - endPercent) < 0.5) return false;
+            const start = Math.min(startPercent, endPercent);
+            const end = Math.max(startPercent, endPercent);
+            const startTime = percentToTime(start);
+            const endTime = percentToTime(end);
+            
+            let recognizedText = '';
+            if (recognitionEnabled) {
+                recognizedText = simulateRecognition(start, end);
+                const textarea = document.getElementById('recognitionText');
+                if (textarea) textarea.value = recognizedText;
+            }
+            
+            const newSegment = {
+                id: `seg_${nextSegmentId++}`,
+                startPercent: start, endPercent: end,
+                startTime: startTime, endTime: endTime,
+                duration: Math.round(percentToSeconds(end) - percentToSeconds(start)),
+                tags: [...tags],
+                text: recognizedText
+            };
+            segments.push(newSegment);
+            renderSegmentList();
+            drawWaveform();
+            renderSegmentHighlights();
+            
+            selectionStart = null;
+            selectionEnd = null;
+            updateSelectionUI();
+            document.getElementById('selectedTimeInfo').innerHTML = '未选中区域';
+            document.getElementById('currentSelectionInfo').innerHTML = '请在波形上拖拽选择区域';
+            if (recognitionEnabled) {
+                document.getElementById('recognitionText').value = '';
+            }
+            return true;
+        }
+        
+        function deleteSegment(segmentId) {
+            segments = segments.filter(s => s.id !== segmentId);
+            renderSegmentList();
+            drawWaveform();
+            renderSegmentHighlights();
+        }
+        
+        function selectSegment(segmentId) {
+            const seg = segments.find(s => s.id === segmentId);
+            if (seg) {
+                selectionStart = seg.startPercent;
+                selectionEnd = seg.endPercent;
+                updateSelectionUI();
+                document.getElementById('selectedTimeInfo').innerHTML = `${seg.startTime} — ${seg.endTime} <span style="font-size:10px;">（已选中）</span>`;
+                document.getElementById('currentSelectionInfo').innerHTML = `已选中: ${seg.startTime} - ${seg.endTime}`;
+                if (recognitionEnabled && seg.text) {
+                    document.getElementById('recognitionText').value = seg.text;
+                }
+            }
+        }
+        
+        function setActiveTag(btn, tagName) {
+            document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeTag = { name: tagName };
+            if (selectionStart !== null && selectionEnd !== null && Math.abs(selectionStart - selectionEnd) > 0.5) {
+                addSegment(selectionStart, selectionEnd, [tagName]);
+            }
+        }
+        
+        function updateSelectionUI() {
+            const rect = document.getElementById('selectionRect');
+            if (selectionStart !== null && selectionEnd !== null && Math.abs(selectionStart - selectionEnd) > 0.5) {
+                const left = Math.min(selectionStart, selectionEnd);
+                const width = Math.abs(selectionEnd - selectionStart);
+                rect.style.display = 'block';
+                rect.style.left = `${left}%`;
+                rect.style.width = `${width}%`;
+            } else {
+                rect.style.display = 'none';
+            }
+        }
+        
+        function toggleRecognition(enabled) {
+            recognitionEnabled = enabled;
+            const recognitionBox = document.getElementById('recognitionBox');
+            const textarea = document.getElementById('recognitionText');
+            if (enabled) {
+                recognitionBox.style.display = 'flex';
+                if (selectionStart !== null && selectionEnd !== null && Math.abs(selectionStart - selectionEnd) > 0.5) {
+                    const text = simulateRecognition(selectionStart, selectionEnd);
+                    textarea.value = text;
+                } else {
+                    textarea.value = '';
+                }
+            } else {
+                recognitionBox.style.display = 'none';
+                textarea.value = '';
+            }
+            renderSegmentList();
+        }
+        
+        function initMouseSelection() {
+            const wrapper = document.getElementById('waveformWrapper');
+            wrapper.addEventListener('mousedown', (e) => {
+                const rect = wrapper.getBoundingClientRect();
+                const percent = ((e.clientX - rect.left) / rect.width) * 100;
+                selectionStart = Math.max(0, Math.min(100, percent));
+                selectionEnd = selectionStart;
+                isDragging = true;
+                updateSelectionUI();
+                const time = percentToTime(selectionStart);
+                document.getElementById('selectedTimeInfo').innerHTML = `${time} — ${time}`;
+                document.getElementById('currentSelectionInfo').innerHTML = `起始点: ${time}`;
+                if (recognitionEnabled) {
+                    document.getElementById('recognitionText').value = '';
+                }
+            });
+            
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const rect = wrapper.getBoundingClientRect();
+                let x = e.clientX - rect.left;
+                if (x < 0) x = 0;
+                if (x > rect.width) x = rect.width;
+                const percent = (x / rect.width) * 100;
+                selectionEnd = Math.max(0, Math.min(100, percent));
+                updateSelectionUI();
+                const startTime = percentToTime(selectionStart);
+                const endTime = percentToTime(selectionEnd);
+                document.getElementById('selectedTimeInfo').innerHTML = `${startTime} — ${endTime}`;
+                document.getElementById('currentSelectionInfo').innerHTML = `已选择: ${startTime} - ${endTime}`;
+            });
+            
+            window.addEventListener('mouseup', () => {
+                if (isDragging && selectionStart !== null && selectionEnd !== null && Math.abs(selectionStart - selectionEnd) > 0.5 && recognitionEnabled) {
+                    const text = simulateRecognition(selectionStart, selectionEnd);
+                    document.getElementById('recognitionText').value = text;
+                }
+                isDragging = false;
+            });
+        }
+        
+        let isPlaying = false;
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = isPlaying ? '⏸' : '▶';
+            btn.classList.toggle('playing', isPlaying);
+        }
+        
+        let currentSpeed = 1.0;
+        function setSpeed(speed) {
+            currentSpeed = speed;
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === `${speed}x`) btn.classList.add('active');
+            });
+        }
+        
+        function prevAudio() { alert('上一条'); }
+        function skipAudio() { alert('跳过'); }
+        function releaseTask() { alert('释放任务'); }
+        function confirmSegments() {
+            alert(`已保存 ${segments.length} 个音频片段标记`);
+        }
+        
+        function toggleSubmenu(el, subId) {
+            event.stopPropagation();
+            const subList = document.getElementById(subId);
+            const navItem = el.closest('.nav-item');
+            if (subList.style.maxHeight && subList.style.maxHeight !== '0px') {
+                subList.style.maxHeight = '0';
+                navItem.classList.remove('open');
+            } else {
+                subList.style.maxHeight = subList.scrollHeight + 'px';
+                navItem.classList.add('open');
+            }
+        }
+        
+        window.addEventListener('resize', () => {
+            drawWaveform();
+            renderSegmentHighlights();
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            canvas = document.getElementById('waveformCanvas');
+            ctx = canvas.getContext('2d');
+            setTimeout(() => {
+                drawWaveform();
+                renderSegmentList();
+                renderSegmentHighlights();
+            }, 100);
+            initMouseSelection();
+            const defaultBtn = document.querySelector('.tag-btn-blue');
+            if (defaultBtn) defaultBtn.classList.add('active');
+        });
+    </script>
+</body>
+</html>

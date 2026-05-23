@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频分割标注台 - 广东省文化馆</title>
+    <style>
+        :root {
+            --primary: #1677ff;
+            --primary-hover: #4096ff;
+            --primary-light: #e6f4ff;
+            --success: #52c41a;
+            --success-light: #f6ffed;
+            --warning: #faad14;
+            --warning-light: #fff7e6;
+            --error: #ff4d4f;
+            --text: #262626;
+            --text-secondary: #595959;
+            --text-tertiary: #8c8c8c;
+            --border: #d9d9d9;
+            --border-light: #f0f0f0;
+            --bg: #fafafa;
+            --bg-white: #ffffff;
+            --radius: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Left Sidebar */
+        .sidebar { width: 200px; background: #1a1a2e; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; z-index: 10; }
+        .sidebar-logo { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 14px; color: #fff; font-weight: 600; }
+        .sidebar-logo span { font-size: 11px; color: var(--primary); display: block; margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; padding: 10px 16px; color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; transition: all 0.2s; gap: 8px; user-select: none; border-right: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.has-sub { justify-content: flex-start; }
+        .nav-item.has-sub.open { background: rgba(74,158,255,0.15); color: var(--primary); border-right-color: var(--primary); }
+        .nav-item .icon { width: 18px; text-align: center; font-size: 12px; color: #8c8c8c; flex-shrink: 0; }
+        .nav-item .text { flex: 1; }
+        .nav-item .arrow { font-size: 10px; color: rgba(255,255,255,0.4); transition: transform 0.2s; }
+        .nav-item.has-sub.open .arrow { transform: rotate(90deg); }
+        .nav-sub-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgba(0,0,0,0.15); }
+        .nav-sub-item { display: flex; align-items: center; padding: 8px 16px 8px 42px; color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; transition: all 0.2s; gap: 8px; }
+        .nav-sub-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-sub-item.active { color: var(--primary); }
+        .nav-sub-item .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+        .nav-sub-item.active .dot { background: var(--primary); }
+        .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; }
+        .user-name { font-size: 12px; color: rgba(255,255,255,0.8); }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+        /* Main area */
+        .main { margin-left: 200px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* Topbar */
+        .topbar {
+            height: 48px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-tertiary); }
+        .topbar-breadcrumb span { color: var(--text); }
+        .topbar-actions { display: flex; gap: 12px; }
+
+        /* Button */
+        .btn { height: 32px; padding: 0 14px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; font-weight: 500; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-default { background: var(--bg-white); border: 1px solid var(--border); color: var(--text); }
+        .btn-default:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Workbench */
+        .workbench {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 12px 24px;
+            background: #f0f2f5;
+            max-height: 1000px;
+            height: 1000px;
+        }
+
+        .wb-header {
+            background: var(--bg-white);
+            border-radius: var(--radius) var(--radius) 0 0;
+            border: 1px solid var(--border-light);
+            border-bottom: none;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wb-header-left .wb-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .wb-header-left .wb-meta { font-size: 12px; color: var(--text-tertiary); display: flex; gap: 16px; flex-wrap: wrap; }
+        .wb-header-right { display: flex; gap: 10px; align-items: center; }
+        .divider-1, .divider-2 { height: 1px; background: var(--border-light); }
+        .wb-nav {
+            background: var(--bg-white);
+            border-left: 1px solid var(--border-light);
+            border-right: 1px solid var(--border-light);
+            padding: 0 20px;
+            display: flex;
+            gap: 24px;
+        }
+        .wb-nav-item {
+            padding: 10px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+        .wb-nav-item:hover { color: var(--text); }
+        .wb-nav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .wb-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            min-height: 0;
+        }
+        .wb-sidebar {
+            width: 320px;
+            border-left: 1px solid var(--border-light);
+            overflow-y: auto;
+            background: var(--bg-white);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .wb-sidebar-section {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .wb-sidebar-section:last-child { border-bottom: none; }
+        .wb-sidebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .wb-sidebar-title .count-badge {
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .wb-sidebar-item { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12px; }
+        .wb-sidebar-item .label { color: var(--text-tertiary); }
+        .wb-sidebar-item .value { color: var(--text); font-weight: 500; }
+        .wb-sidebar-item .value.green { color: var(--success); }
+        .wb-sidebar-item .value.yellow { color: var(--warning); }
+        .progress-bar { height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #69c0ff); border-radius: 3px; }
+        .progress-text { font-size: 11px; color: var(--text-tertiary); margin-top: 6px; text-align: center; }
+        .wb-footer {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+        .wb-footer-btns { display: flex; gap: 10px; }
+        .wb-page-info { font-size: 12px; color: var(--text-tertiary); }
+
+        /* ========== 视频分割样式 ========== */
+        .video-seg-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .video-main {
+            padding: 10px 20px 6px 20px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .video-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        
+        /* 视频播放器区域 */
+        .video-player-wrapper {
+            background: #000;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            position: relative;
+            height: 240px;
+            min-height: 240px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .video-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: rgba(255,255,255,0.6);
+            flex-direction: column;
+            gap: 12px;
+        }
+        .video-placeholder .play-icon { font-size: 48px; opacity: 0.8; }
+        .video-placeholder .video-hint { font-size: 12px; }
+        
+        /* 时间轴 */
+        .video-timeline {
+            margin-top: 12px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+        }
+        .timeline-scrubber {
+            position: relative;
+            height: 32px;
+            cursor: pointer;
+        }
+        .timeline-track {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+        }
+        .timeline-progress {
+            position: absolute;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 2px;
+            width: 0%;
+        }
+        .timeline-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+        .timeline-segments {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            right: 0;
+            height: 8px;
+            display: flex;
+            gap: 2px;
+        }
+        .timeline-seg {
+            height: 8px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 10px;
+            color: var(--text-tertiary);
+            padding: 0 4px;
+        }
+
+        /* 打点按钮区域 */
+        .marker-buttons {
+            padding: 12px 20px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .marker-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+            background: var(--bg-white);
+        }
+        .marker-btn.start-btn { border-left: 3px solid var(--success); }
+        .marker-btn.end-btn { border-left: 3px solid var(--error); }
+        .marker-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+        .marker-btn .time-display { font-family: monospace; font-size: 13px; font-weight: 600; color: var(--primary); }
+        .marker-btn.start-btn .time-display { color: var(--success); }
+        .marker-btn.end-btn .time-display { color: var(--error); }
+        .clear-markers-btn {
+            margin-left: auto;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 16px;
+        }
+        .clear-markers-btn:hover { background: var(--bg); color: var(--error); }
+
+        /* 识别区域 */
+        .recognition-bar {
+            padding: 14px 20px;
+            margin: 8px 0 4px 0;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            background: var(--bg-white);
+            flex-shrink: 0;
+        }
+        .switch-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            padding-top: 4px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.2s;
+            border-radius: 22px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.2s;
+            border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .recognition-textbox { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .recognition-textbox textarea {
+            width: 100%;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            font-size: 12px;
+            font-family: inherit;
+            resize: vertical;
+            background: var(--bg-white);
+            color: var(--text);
+            min-height: 68px;
+            line-height: 1.5;
+        }
+        .recognition-textbox textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+        .recognition-hint { font-size: 10px; color: var(--text-tertiary); display: flex; align-items: center; gap: 6px; }
+        .recognition-hint .dot { width: 4px; height: 4px; background: var(--success); border-radius: 50%; }
+
+        /* 播放控制栏 */
+        .playback-controls {
+            padding: 10px 20px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg-white);
+            flex-shrink: 0;
+        }
+        .play-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .play-btn:hover { background: var(--primary-hover); transform: scale(1.02); }
+        .play-btn.playing { background: var(--warning); }
+        .playback-info { display: flex; flex-direction: column; gap: 2px; }
+        .playback-time { font-size: 12px; color: var(--text); font-weight: 500; }
+        .playback-duration { font-size: 10px; color: var(--text-tertiary); }
+        .speed-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            background: var(--bg);
+            padding: 2px 6px;
+            border-radius: 16px;
+        }
+        .speed-group span { font-size: 11px; color: var(--text-tertiary); }
+        .speed-btn {
+            padding: 2px 8px;
+            border: none;
+            border-radius: 14px;
+            background: transparent;
+            font-size: 11px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .speed-btn:hover { background: var(--border-light); color: var(--text); }
+        .speed-btn.active { background: var(--primary-light); color: var(--primary); font-weight: 500; }
+
+        /* 标签工具栏 */
+        .segment-toolbar {
+            padding: 10px 20px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: var(--bg-white);
+            flex-shrink: 0;
+        }
+        .segment-toolbar-label { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
+        .tag-btn {
+            padding: 5px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-white);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tag-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+        .tag-btn.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 500; }
+        .current-segment-info {
+            margin-left: auto;
+            font-size: 10px;
+            color: var(--text-tertiary);
+            background: var(--bg);
+            padding: 4px 12px;
+            border-radius: 16px;
+        }
+
+        /* 片段列表 */
+        .segment-list { display: flex; flex-direction: column; gap: 12px; }
+        .segment-item {
+            padding: 12px 14px;
+            background: #f9fafb;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .segment-item:hover { border-color: var(--primary); background: var(--bg-white); box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+        .segment-item.active { border-color: var(--primary); background: var(--primary-light); }
+        .segment-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .segment-time { font-size: 12px; font-weight: 600; color: var(--text); background: rgba(0,0,0,0.04); padding: 2px 8px; border-radius: 14px; }
+        .segment-duration { font-size: 10px; color: var(--text-tertiary); background: rgba(0,0,0,0.04); padding: 2px 8px; border-radius: 12px; }
+        .segment-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+        .segment-tag { padding: 2px 10px; border-radius: 14px; font-size: 10px; font-weight: 500; }
+        .segment-tag-blue { background: rgba(22,119,255,0.12); color: #1677ff; }
+        .segment-tag-green { background: rgba(82,196,26,0.12); color: #52c41a; }
+        .segment-tag-purple { background: rgba(114,46,209,0.12); color: #722ed1; }
+        .segment-tag-orange { background: rgba(250,173,20,0.12); color: #faad14; }
+        .segment-tag-red { background: rgba(255,77,79,0.12); color: #ff4d4f; }
+        .segment-text-preview {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.4;
+        }
+        .segment-text-preview .preview-icon { color: var(--primary); flex-shrink: 0; font-size: 11px; }
+        .segment-text-preview .preview-content { flex: 1; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .delete-segment {
+            color: var(--text-tertiary);
+            cursor: pointer;
+            font-size: 13px;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        .delete-segment:hover { color: var(--error); background: rgba(255,77,79,0.1); }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <h1>广东省文化馆</h1>
+            <span>数字资源标注平台</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-item has-sub open" onclick="toggleSubmenu(this, 'video-subs')">
+                <span class="icon">▶</span><span class="text">视频资源</span><span class="arrow">›</span>
+            </div>
+            <div class="nav-sub-list" id="video-subs" style="max-height: 80px;">
+                <div class="nav-sub-item active"><span class="dot"></span>视频分割标注</div>
+            </div>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">李</div>
+                <div>
+                    <div class="user-name">李华</div>
+                    <div class="user-role">标注员</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-breadcrumb">
+                <span>广东省文化馆</span><span>›</span><span>数字资源标注</span><span>›</span>
+                <span>视频分割标注</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-default" onclick="history.back()">返回列表</button>
+                <button class="btn btn-primary" onclick="submitAll()">提交全部</button>
+            </div>
+        </div>
+
+        <div class="workbench">
+            <div class="wb-header">
+                <div class="wb-header-left">
+                    <div class="wb-title">广府庙会非遗展演记录</div>
+                    <div class="wb-meta">
+                        <span>资源ID：GDSG-VIDEO-2024-008</span>
+                        <span>拍摄日期：2024-02-24</span>
+                        <span>时长：12:00</span>
+                        <span>已标注：<span id="segmentCount">3</span>/15</span>
+                    </div>
+                </div>
+                <div class="wb-header-right">
+                    <div style="font-size:12px;color:var(--text-secondary);">标注员：李华</div>
+                </div>
+            </div>
+            <div class="divider-1"></div>
+            <div class="wb-nav">
+                <div class="wb-nav-item active">待分割 (12)</div>
+                <div class="wb-nav-item">已分割 (3)</div>
+                <div class="wb-nav-item">全部视频 (15)</div>
+            </div>
+            <div class="divider-2"></div>
+
+            <div class="wb-body">
+                <div class="video-seg-area">
+                    <div class="video-main">
+                        <div class="video-title">视频预览（点击视频跳转时间点）</div>
+                        <div class="video-player-wrapper" id="videoPlayer" onclick="seekToTimeFromClick(event)">
+                            <div class="video-placeholder">
+                                <div class="play-icon">▶</div>
+                                <div class="video-hint">点击视频跳转到该时间点</div>
+                                <div class="video-hint" style="font-size:10px;">然后点击下方按钮标记起始/结束帧</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 时间轴 -->
+                        <div class="video-timeline">
+                            <div class="timeline-scrubber" id="timelineScrubber" onclick="seekToTime(event)">
+                                <div class="timeline-track">
+                                    <div class="timeline-progress" id="timelineProgress"></div>
+                                    <div class="timeline-thumb" id="timelineThumb" style="left: 0%;"></div>
+                                </div>
+                                <div class="timeline-segments" id="timelineSegments"></div>
+                            </div>
+                            <div class="timeline-labels">
+                                <span>0:00</span><span>2:00</span><span>4:00</span><span>6:00</span><span>8:00</span><span>10:00</span><span>12:00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 起始帧/结束帧按钮区域 -->
+                    <div class="marker-buttons">
+                        <button class="marker-btn start-btn" id="startFrameBtn" onclick="markStartFrame()">
+                            <span>起始帧</span>
+                            <span class="time-display" id="startTimeDisplay">--:--</span>
+                        </button>
+                        <button class="marker-btn end-btn" id="endFrameBtn" onclick="markEndFrame()">
+                            <span>结束帧</span>
+                            <span class="time-display" id="endTimeDisplay">--:--</span>
+                        </button>
+                        <span class="clear-markers-btn" onclick="clearMarkers()">清除标记</span>
+                    </div>
+
+                    <!-- 视频内容识别区域 -->
+                    <div class="recognition-bar">
+                        <label class="switch-label">
+                            <span style="font-size:13px; font-weight:500;">视频内容识别</span>
+                            <div class="switch">
+                                <input type="checkbox" id="recognitionSwitch" onchange="toggleRecognition(this.checked)">
+                                <span class="slider"></span>
+                            </div>
+                        </label>
+                        <div class="recognition-textbox" style="flex:1; display:none;" id="recognitionBox">
+                            <textarea id="recognitionText" rows="2" placeholder="开启内容识别后，标记完成将自动识别视频内容描述，可编辑修改..."></textarea>
+                            <div class="recognition-hint"><span class="dot"></span><span>识别内容可编辑，保存后将关联至当前片段</span></div>
+                        </div>
+                    </div>
+
+                    <!-- 播放控制栏 -->
+                    <div class="playback-controls">
+                        <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+                        <div class="playback-info">
+                            <div class="playback-time" id="currentTimeDisplay">00:00</div>
+                            <div class="playback-duration">12:00</div>
+                        </div>
+                        <div class="speed-group">
+                            <span>倍速</span>
+                            <button class="speed-btn" onclick="setSpeed(0.5)">0.5x</button>
+                            <button class="speed-btn active" onclick="setSpeed(1.0)">1.0x</button>
+                            <button class="speed-btn" onclick="setSpeed(1.5)">1.5x</button>
+                            <button class="speed-btn" onclick="setSpeed(2.0)">2.0x</button>
+                        </div>
+                        <div class="frame-nav">
+                            <button class="frame-nav-btn" onclick="navigateFrame(-1)">◀</button>
+                            <button class="frame-nav-btn" onclick="navigateFrame(1)">▶</button>
+                            <span class="frame-info" id="frameInfo">第 0 帧</span>
+                        </div>
+                    </div>
+
+                    <!-- 标签工具栏 -->
+                    <div class="segment-toolbar">
+                        <span class="segment-toolbar-label">标签：</span>
+                        <button class="tag-btn tag-btn-blue" onclick="setActiveTag(this, '人物')">人物</button>
+                        <button class="tag-btn tag-btn-green" onclick="setActiveTag(this, '场景')">场景</button>
+                        <button class="tag-btn tag-btn-red" onclick="setActiveTag(this, '事件')">事件</button>
+                        <button class="tag-btn tag-btn-purple" onclick="setActiveTag(this, '物体')">物体</button>
+                        <button class="tag-btn tag-btn-orange" onclick="setActiveTag(this, '活动')">活动</button>
+                        <span class="current-segment-info" id="currentSegmentInfo">点击起始帧/结束帧按钮标记</span>
+                    </div>
+                </div>
+
+                <div class="wb-sidebar">
+                    <div class="wb-sidebar-section">
+                        <div class="wb-sidebar-title">已标记视频 <span class="count-badge" id="segmentBadge">3</span></div>
+                        <div class="segment-list" id="segmentList"></div>
+                    </div>
+                    <div class="wb-sidebar-section">
+                        <div class="wb-sidebar-title">标注进度</div>
+                        <div class="wb-sidebar-item"><span class="label">总片段数</span><span class="value">15</span></div>
+                        <div class="wb-sidebar-item"><span class="label">已标记</span><span class="value green" id="sidebarCount">3</span></div>
+                        <div class="wb-sidebar-item"><span class="label">待标记</span><span class="value yellow">12</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 20%;"></div></div>
+                        <div class="progress-text">整体进度 20%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wb-footer">
+                <div class="wb-footer-btns">
+                    <button class="btn btn-default" onclick="prevVideo()">上一条</button>
+                    <button class="btn btn-primary" onclick="confirmSegments()">确认标注 →</button>
+                    <button class="btn btn-default" onclick="skipVideo()">跳过</button>
+                    <button class="btn btn-default" onclick="releaseTask()">释放任务</button>
+                </div>
+                <div class="wb-page-info">第 1/12 条 · 待分割</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 视频数据
+        const totalDuration = 720; // 12分钟 = 720秒
+        let currentTime = 0; // 当前播放时间（秒）
+        let startTime = null;
+        let endTime = null;
+        let activeTag = { name: '人物', color: 'blue' };
+        let recognitionEnabled = false;
+        let isPlaying = false;
+        let currentSpeed = 1.0;
+        let animationId = null;
+        let currentFrameNum = 0;
+        
+        // 已标记片段列表
+        let segments = [
+            { id: 'seg_1', startTime: 60, endTime: 120, startTimeStr: '01:00', endTimeStr: '02:00', duration: 60, tags: ['人物'], text: '广府庙会开幕式，粤剧演员身着传统戏服登场，唱腔婉转动人。' },
+            { id: 'seg_2', startTime: 240, endTime: 300, startTimeStr: '04:00', endTimeStr: '05:00', duration: 60, tags: ['活动'], text: '广东醒狮表演，梅花桩上腾挪跳跃，锣鼓喧天，现场观众喝彩不断。' },
+            { id: 'seg_3', startTime: 420, endTime: 480, startTimeStr: '07:00', endTimeStr: '08:00', duration: 60, tags: ['场景'], text: '非遗项目展示区，广彩、牙雕、木雕等传统工艺现场制作演示。' }
+        ];
+        let nextSegmentId = 4;
+        
+        // 内容识别映射
+        const recognitionMap = {
+            '00:00-00:30': '视频开场，广府庙会现场热闹非凡，人群熙熙攘攘。',
+            '00:30-01:00': '开幕式致辞，领导嘉宾上台讲话。',
+            '01:00-02:00': '粤剧《柳毅传书》选段表演，演员唱腔婉转，动作优美。',
+            '02:00-03:00': '粤剧表演继续，乐队伴奏配合默契。',
+            '03:00-04:00': '主持人串场，介绍下一个节目。',
+            '04:00-05:00': '广东醒狮表演，梅花桩上精彩跳跃。',
+            '05:00-06:00': '醒狮采青环节，观众互动热烈。',
+            '06:00-07:00': '传统武术表演，拳术器械展示。',
+            '07:00-08:00': '非遗项目展示，广彩、牙雕现场制作。',
+            '08:00-09:00': '市民体验非遗项目，传承人指导。',
+            '09:00-10:00': '粤剧脸谱绘制体验活动。',
+            '10:00-11:00': '颁奖环节，表彰非遗传承人。',
+            '11:00-12:00': '活动结束，观众散场。'
+        };
+        
+        // 辅助函数
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function secondsToPercent(seconds) {
+            return (seconds / totalDuration) * 100;
+        }
+        
+        function percentToSeconds(percent) {
+            return (percent / 100) * totalDuration;
+        }
+        
+        function simulateRecognition(startSec, endSec) {
+            const startStr = formatTime(startSec);
+            const endStr = formatTime(endSec);
+            const key = `${startStr}-${endStr}`;
+            for (const [range, text] of Object.entries(recognitionMap)) {
+                if (key === range) return text;
+            }
+            return `[视频片段 ${startStr} - ${endStr}] 广府庙会非遗展演内容，请根据实际情况编辑描述。`;
+        }
+        
+        // 更新时间轴UI
+        function updateTimelineUI() {
+            const percent = secondsToPercent(currentTime);
+            document.getElementById('timelineProgress').style.width = `${percent}%`;
+            document.getElementById('timelineThumb').style.left = `${percent}%`;
+            document.getElementById('currentTimeDisplay').textContent = formatTime(currentTime);
+            document.getElementById('frameInfo').textContent = `第 ${Math.floor(currentTime * 30)} 帧`;
+        }
+        
+        // 渲染时间轴上的片段标记
+        function renderTimelineSegments() {
+            const container = document.getElementById('timelineSegments');
+            if (!container) return;
+            let html = '';
+            for (const seg of segments) {
+                const leftPercent = secondsToPercent(seg.startTime);
+                const widthPercent = secondsToPercent(seg.endTime) - leftPercent;
+                let color = '#52c41a';
+                if (seg.tags.includes('人物')) color = '#1677ff';
+                else if (seg.tags.includes('事件')) color = '#ff4d4f';
+                else if (seg.tags.includes('场景')) color = '#722ed1';
+                else if (seg.tags.includes('活动')) color = '#faad14';
+                html += `<div class="timeline-seg" style="left: ${leftPercent}%; width: ${widthPercent}%; background: ${color};" onclick="event.stopPropagation(); selectSegmentById('${seg.id}')"></div>`;
+            }
+            container.innerHTML = html;
+        }
+        
+        // 渲染片段列表
+        function renderSegmentList() {
+            const container = document.getElementById('segmentList');
+            if (!container) return;
+            if (segments.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-tertiary);font-size:12px;padding:20px;text-align:center;">暂无标记片段<br><span style="font-size:11px;">点击起始帧/结束帧按钮标记</span></div>';
+                return;
+            }
+            container.innerHTML = segments.map(seg => `
+                <div class="segment-item" onclick="selectSegment('${seg.id}')">
+                    <div class="segment-item-header">
+                        <span class="segment-time">${seg.startTimeStr} — ${seg.endTimeStr}</span>
+                        <span style="display:flex; gap:6px;">
+                            <span class="segment-duration">${seg.duration}秒</span>
+                            <span class="delete-segment" onclick="event.stopPropagation(); deleteSegment('${seg.id}')">✕</span>
+                        </span>
+                    </div>
+                    <div class="segment-tags">
+                        ${seg.tags.map(t => `<span class="segment-tag segment-tag-${t === '人物' ? 'blue' : t === '场景' ? 'purple' : t === '事件' ? 'red' : t === '活动' ? 'orange' : 'green'}">${t}</span>`).join('')}
+                    </div>
+                    ${recognitionEnabled && seg.text ? `<div class="segment-text-preview"><span class="preview-icon">📝</span><span class="preview-content">${seg.text.length > 60 ? seg.text.substring(0,60)+'...' : seg.text}</span></div>` : ''}
+                </div>
+            `).join('');
+            document.getElementById('segmentCount').textContent = segments.length;
+            document.getElementById('sidebarCount').textContent = segments.length;
+            document.getElementById('segmentBadge').textContent = segments.length;
+        }
+        
+        // 添加片段
+        function addSegment(startSec, endSec, tags) {
+            if (startSec === null || endSec === null || startSec >= endSec) return false;
+            const startStr = formatTime(startSec);
+            const endStr = formatTime(endSec);
+            let text = '';
+            if (recognitionEnabled) {
+                text = simulateRecognition(startSec, endSec);
+                document.getElementById('recognitionText').value = text;
+            }
+            const newSegment = {
+                id: `seg_${nextSegmentId++}`,
+                startTime: startSec, endTime: endSec,
+                startTimeStr: startStr, endTimeStr: endStr,
+                duration: Math.round(endSec - startSec),
+                tags: [...tags],
+                text: text
+            };
+            segments.push(newSegment);
+            renderSegmentList();
+            renderTimelineSegments();
+            clearMarkers();
+            return true;
+        }
+        
+        function deleteSegment(id) {
+            segments = segments.filter(s => s.id !== id);
+            renderSegmentList();
+            renderTimelineSegments();
+        }
+        
+        function selectSegment(id) {
+            const seg = segments.find(s => s.id === id);
+            if (seg) {
+                currentTime = seg.startTime;
+                updateTimelineUI();
+                if (recognitionEnabled && seg.text) {
+                    document.getElementById('recognitionText').value = seg.text;
+                }
+            }
+        }
+        
+        function selectSegmentById(id) {
+            selectSegment(id);
+        }
+        
+        // 标记起始帧
+        function markStartFrame() {
+            startTime = currentTime;
+            document.getElementById('startTimeDisplay').textContent = formatTime(startTime);
+            // 如果已经有结束时间且起始时间大于结束时间，提示
+            if (endTime !== null && startTime >= endTime) {
+                alert('起始时间不能大于或等于结束时间，请重新标记');
+                startTime = null;
+                document.getElementById('startTimeDisplay').textContent = '--:--';
+                return;
+            }
+            document.getElementById('currentSegmentInfo').innerHTML = `已标记起始: ${formatTime(startTime)}，请标记结束`;
+        }
+        
+        // 标记结束帧
+        function markEndFrame() {
+            if (startTime === null) {
+                alert('请先标记起始帧');
+                return;
+            }
+            endTime = currentTime;
+            if (endTime <= startTime) {
+                alert('结束时间必须大于起始时间');
+                endTime = null;
+                return;
+            }
+            document.getElementById('endTimeDisplay').textContent = formatTime(endTime);
+            document.getElementById('currentSegmentInfo').innerHTML = `已标记: ${formatTime(startTime)} - ${formatTime(endTime)}，点击标签添加`;
+            
+            // 自动触发内容识别
+            if (recognitionEnabled) {
+                const text = simulateRecognition(startTime, endTime);
+                document.getElementById('recognitionText').value = text;
+            }
+        }
+        
+        // 清除标记
+        function clearMarkers() {
+            startTime = null;
+            endTime = null;
+            document.getElementById('startTimeDisplay').textContent = '--:--';
+            document.getElementById('endTimeDisplay').textContent = '--:--';
+            document.getElementById('currentSegmentInfo').innerHTML = '点击起始帧/结束帧按钮标记';
+            if (recognitionEnabled) {
+                document.getElementById('recognitionText').value = '';
+            }
+        }
+        
+        // 完成标记并添加标签
+        function setActiveTag(btn, tagName) {
+            document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeTag = { name: tagName };
+            
+            if (startTime !== null && endTime !== null && startTime < endTime) {
+                addSegment(startTime, endTime, [tagName]);
+            } else {
+                alert('请先标记起始帧和结束帧');
+            }
+        }
+        
+        // 视频点击跳转
+        function seekToTimeFromClick(event) {
+            const wrapper = document.getElementById('videoPlayer');
+            const rect = wrapper.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            currentTime = Math.max(0, Math.min(totalDuration, percent * totalDuration));
+            updateTimelineUI();
+        }
+        
+        function seekToTime(event) {
+            const scrubber = document.getElementById('timelineScrubber');
+            const rect = scrubber.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            currentTime = Math.max(0, Math.min(totalDuration, percent * totalDuration));
+            updateTimelineUI();
+        }
+        
+        // 播放控制
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = isPlaying ? '⏸' : '▶';
+            btn.classList.toggle('playing', isPlaying);
+            
+            if (isPlaying) {
+                let lastTime = performance.now();
+                function playLoop(now) {
+                    const delta = Math.min(0.1, (now - lastTime) / 1000);
+                    lastTime = now;
+                    currentTime += delta * currentSpeed;
+                    if (currentTime >= totalDuration) {
+                        currentTime = totalDuration;
+                        isPlaying = false;
+                        btn.textContent = '▶';
+                        btn.classList.remove('playing');
+                    }
+                    updateTimelineUI();
+                    if (isPlaying) {
+                        animationId = requestAnimationFrame(playLoop);
+                    }
+                }
+                if (animationId) cancelAnimationFrame(animationId);
+                lastTime = performance.now();
+                animationId = requestAnimationFrame(playLoop);
+            } else {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+        }
+        
+        function setSpeed(speed) {
+            currentSpeed = speed;
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === `${speed}x`) btn.classList.add('active');
+            });
+        }
+        
+        function navigateFrame(dir) {
+            const frameRate = 30;
+            currentTime += dir / frameRate;
+            currentTime = Math.max(0, Math.min(totalDuration, currentTime));
+            updateTimelineUI();
+        }
+        
+        function toggleRecognition(enabled) {
+            recognitionEnabled = enabled;
+            const recognitionBox = document.getElementById('recognitionBox');
+            const textarea = document.getElementById('recognitionText');
+            if (enabled) {
+                recognitionBox.style.display = 'flex';
+                if (startTime !== null && endTime !== null && startTime < endTime) {
+                    textarea.value = simulateRecognition(startTime, endTime);
+                }
+            } else {
+                recognitionBox.style.display = 'none';
+                textarea.value = '';
+            }
+            renderSegmentList();
+        }
+        
+        // 辅助函数
+        function prevVideo() { alert('上一条'); }
+        function skipVideo() { alert('跳过'); }
+        function releaseTask() { alert('任务已释放'); }
+        function confirmSegments() { alert(`已保存 ${segments.length} 个视频片段标记`); }
+        function submitAll() { alert(`已提交 ${segments.length} 个视频片段标记`); }
+        
+        function toggleSubmenu(el, subId) {
+            event.stopPropagation();
+            const subList = document.getElementById(subId);
+            const navItem = el.closest('.nav-item');
+            if (subList.style.maxHeight && subList.style.maxHeight !== '0px') {
+                subList.style.maxHeight = '0';
+                navItem.classList.remove('open');
+            } else {
+                subList.style.maxHeight = subList.scrollHeight + 'px';
+                navItem.classList.add('open');
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderSegmentList();
+            renderTimelineSegments();
+            updateTimelineUI();
+            document.querySelector('.tag-btn-blue').classList.add('active');
+        });
+    </script>
+</body>
+</html>

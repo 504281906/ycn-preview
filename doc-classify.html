@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档分类 - 广东省文化馆</title>
+    <style>
+        :root {
+            --primary: #1677ff;
+            --primary-hover: #4096ff;
+            --primary-light: #e6f4ff;
+            --success: #52c41a;
+            --success-light: #f6ffed;
+            --warning: #faad14;
+            --warning-light: #fff7e6;
+            --error: #ff4d4f;
+            --text: #262626;
+            --text-secondary: #595959;
+            --text-tertiary: #8c8c8c;
+            --border: #d9d9d9;
+            --border-light: #f0f0f0;
+            --bg: #fafafa;
+            --bg-white: #ffffff;
+            --radius: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Left Sidebar */
+        .sidebar { width: 200px; background: #1a1a2e; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; z-index: 10; }
+        .sidebar-logo { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 14px; color: #fff; font-weight: 600; }
+        .sidebar-logo span { font-size: 11px; color: var(--primary); display: block; margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; padding: 10px 16px; color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; transition: all 0.2s; gap: 8px; user-select: none; border-right: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.has-sub { justify-content: flex-start; }
+        .nav-item.has-sub.open { background: rgba(74,158,255,0.15); color: var(--primary); border-right-color: var(--primary); }
+        .nav-item .icon { width: 18px; text-align: center; font-size: 12px; color: #8c8c8c; flex-shrink: 0; }
+        .nav-item .text { flex: 1; }
+        .nav-item .arrow { font-size: 10px; color: rgba(255,255,255,0.4); transition: transform 0.2s; }
+        .nav-item.has-sub.open .arrow { transform: rotate(90deg); }
+        .nav-sub-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgba(0,0,0,0.15); }
+        .nav-sub-item { display: flex; align-items: center; padding: 8px 16px 8px 42px; color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; transition: all 0.2s; gap: 8px; }
+        .nav-sub-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-sub-item.active { color: var(--primary); }
+        .nav-sub-item .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+        .nav-sub-item.active .dot { background: var(--primary); }
+        .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; }
+        .user-name { font-size: 12px; color: rgba(255,255,255,0.8); }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+        /* Main area */
+        .main { margin-left: 200px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* Topbar */
+        .topbar {
+            height: 48px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-tertiary); }
+        .topbar-breadcrumb span { color: var(--text); }
+        .topbar-actions { display: flex; gap: 12px; }
+
+        /* Button */
+        .btn { height: 32px; padding: 0 14px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; font-weight: 500; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-default { background: var(--bg-white); border: 1px solid var(--border); color: var(--text); }
+        .btn-default:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Workbench */
+        .workbench {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 12px 24px;
+            background: #f0f2f5;
+            max-height: 1000px;
+            height: 1000px;
+        }
+
+        .wb-header {
+            background: var(--bg-white);
+            border-radius: var(--radius) var(--radius) 0 0;
+            border: 1px solid var(--border-light);
+            border-bottom: none;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wb-header-left .wb-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .wb-header-left .wb-meta { font-size: 12px; color: var(--text-tertiary); display: flex; gap: 16px; flex-wrap: wrap; }
+        .wb-header-right { display: flex; gap: 10px; align-items: center; }
+        .divider-1, .divider-2 { height: 1px; background: var(--border-light); }
+
+        /* 导航标签 - 简洁样式 */
+        .wb-nav {
+            background: var(--bg-white);
+            border-left: 1px solid var(--border-light);
+            border-right: 1px solid var(--border-light);
+            padding: 0 20px;
+            display: flex;
+            gap: 28px;
+        }
+        .wb-nav-item {
+            padding: 10px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.2s;
+        }
+        .wb-nav-item:hover { color: var(--text); }
+        .wb-nav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        /* 主体区域 */
+        .wb-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+        }
+
+        /* 左侧文档区域 */
+        .doc-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-right: 1px solid var(--border-light);
+        }
+        .doc-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg);
+        }
+        .doc-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .doc-meta {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+        .doc-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.9;
+            color: var(--text);
+        }
+        .doc-paragraph {
+            margin-bottom: 16px;
+        }
+
+        /* 右侧标签区域 */
+        .tags-area {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-white);
+            flex-shrink: 0;
+        }
+        .tags-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .tags-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .tags-header p {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+        .tags-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* 标签分类区块 */
+        .tag-category {
+            margin-bottom: 20px;
+        }
+        .category-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .tag-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .tag-btn {
+            padding: 6px 16px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            background: var(--bg-white);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tag-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+        .tag-btn.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 500; box-shadow: var(--shadow-sm); }
+
+        /* 已选标签展示 */
+        .selected-tags-section {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-light);
+        }
+        .selected-tags-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .selected-tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .selected-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px 4px 14px;
+            border-radius: 24px;
+            font-size: 12px;
+            background: #f0f5ff;
+            border: 1px solid var(--primary-light);
+            transition: all 0.2s;
+        }
+        .selected-tag .tag-name { color: var(--primary); font-weight: 500; }
+        .remove-tag {
+            color: var(--text-tertiary);
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 12px;
+        }
+        .remove-tag:hover { color: var(--error); background: rgba(255,77,79,0.1); }
+        .count-badge {
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        /* Footer - 右下角显示标注进度 */
+        .wb-footer {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+        .wb-footer-btns { display: flex; gap: 10px; }
+        .progress-info {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            background: var(--bg);
+            padding: 4px 12px;
+            border-radius: 16px;
+        }
+        .progress-info strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <h1>广东省文化馆</h1>
+            <span>数字资源标注平台</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-item has-sub open" onclick="toggleSubmenu(this, 'text-subs')">
+                <span class="icon">T</span><span class="text">文本资源</span><span class="arrow">›</span>
+            </div>
+            <div class="nav-sub-list" id="text-subs" style="max-height: 80px;">
+                <div class="nav-sub-item active"><span class="dot"></span>文档分类</div>
+            </div>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">李</div>
+                <div>
+                    <div class="user-name">李华</div>
+                    <div class="user-role">标注员</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-breadcrumb">
+                <span>广东省文化馆</span><span>›</span><span>数字资源标注</span><span>›</span>
+                <span>文档分类</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-default" onclick="history.back()">返回列表</button>
+                <button class="btn btn-primary" onclick="saveAll()">提交全部</button>
+            </div>
+        </div>
+
+        <div class="workbench">
+            <div class="wb-header">
+                <div class="wb-header-left">
+                    <div class="wb-title">粤剧文献 · 文档分类标注</div>
+                    <div class="wb-meta">
+                        <span>任务ID：GDSG-DOC-CLASS-001</span>
+                        <span>文档数：24</span>
+                        <span>已分类：<span id="classifiedCount">3</span>/24</span>
+                    </div>
+                </div>
+                <div class="wb-header-right">
+                    <div style="font-size:12px;color:var(--text-secondary);">标注员：李华</div>
+                </div>
+            </div>
+            <div class="divider-1"></div>
+            
+            <!-- 简洁导航标签 -->
+            <div class="wb-nav">
+                <div class="wb-nav-item active">待分类</div>
+                <div class="wb-nav-item">已分类</div>
+                <div class="wb-nav-item">全部文档</div>
+            </div>
+            <div class="divider-2"></div>
+
+            <div class="wb-body">
+                <!-- 左侧文档区域 -->
+                <div class="doc-area">
+                    <div class="doc-header">
+                        <div class="doc-title">《帝女花》粤剧艺术研究</div>
+                        <div class="doc-meta">作者：陈小明 · 来源：广东省文化馆文献库 · 入库时间：2024-10-15</div>
+                    </div>
+                    <div class="doc-content">
+                        <div class="doc-paragraph">
+                            《帝女花》是粤剧经典剧目，由唐涤生根据清代黄燮清传奇改编，1957年首演于香港。故事讲述明末崇祯年间，长平公主与周世显的爱情悲剧。全剧以“香夭”一折最为著名，唱腔哀婉动人，被誉为粤剧舞台的千古绝唱。
+                        </div>
+                        <div class="doc-paragraph">
+                            任剑辉与白雪仙的“任白配”是粤剧史上最经典的搭档组合，二人主演的《帝女花》更是将粤剧艺术推向高峰。2006年，粤剧被列入第一批国家级非物质文化遗产名录，广东省文化馆作为非遗保护单位，多年来致力于粤剧的传承与推广工作。
+                        </div>
+                        <div class="doc-paragraph">
+                            本文通过对《帝女花》剧本、唱腔、表演艺术的分析，探讨粤剧艺术的审美特征及其在现代社会的传承与发展。研究表明，粤剧作为岭南文化的瑰宝，在新时代背景下依然焕发着强大的生命力。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧标签区域 -->
+                <div class="tags-area">
+                    <div class="tags-header">
+                        <h3>🏷️ 文档分类标签</h3>
+                        <p>点击标签进行标注（可多选）</p>
+                    </div>
+                    <div class="tags-body">
+                        <!-- 主题分类 -->
+                        <div class="tag-category">
+                            <div class="category-title">📌 主题分类</div>
+                            <div class="tag-grid" id="themeTags">
+                                <span class="tag-btn" data-tag="粤剧研究">粤剧研究</span>
+                                <span class="tag-btn" data-tag="非遗保护">非遗保护</span>
+                                <span class="tag-btn" data-tag="戏曲评论">戏曲评论</span>
+                                <span class="tag-btn" data-tag="剧本分析">剧本分析</span>
+                                <span class="tag-btn" data-tag="唱腔艺术">唱腔艺术</span>
+                                <span class="tag-btn" data-tag="表演艺术">表演艺术</span>
+                            </div>
+                        </div>
+
+                        <!-- 内容类型 -->
+                        <div class="tag-category">
+                            <div class="category-title">📄 内容类型</div>
+                            <div class="tag-grid" id="typeTags">
+                                <span class="tag-btn" data-tag="学术论文">学术论文</span>
+                                <span class="tag-btn" data-tag="研究报告">研究报告</span>
+                                <span class="tag-btn" data-tag="文献综述">文献综述</span>
+                                <span class="tag-btn" data-tag="科普文章">科普文章</span>
+                                <span class="tag-btn" data-tag="访谈记录">访谈记录</span>
+                            </div>
+                        </div>
+
+                        <!-- 适用人群 -->
+                        <div class="tag-category">
+                            <div class="category-title">👥 适用人群</div>
+                            <div class="tag-grid" id="audienceTags">
+                                <span class="tag-btn" data-tag="研究人员">研究人员</span>
+                                <span class="tag-btn" data-tag="粤剧演员">粤剧演员</span>
+                                <span class="tag-btn" data-tag="爱好者">爱好者</span>
+                                <span class="tag-btn" data-tag="学生">学生</span>
+                                <span class="tag-btn" data-tag="普通读者">普通读者</span>
+                            </div>
+                        </div>
+
+                        <!-- 难度等级 -->
+                        <div class="tag-category">
+                            <div class="category-title">⭐ 难度等级</div>
+                            <div class="tag-grid" id="levelTags">
+                                <span class="tag-btn" data-tag="入门级">入门级</span>
+                                <span class="tag-btn" data-tag="进阶级">进阶级</span>
+                                <span class="tag-btn" data-tag="专家级">专家级</span>
+                            </div>
+                        </div>
+
+                        <!-- 已选标签 -->
+                        <div class="selected-tags-section">
+                            <div class="selected-tags-title">
+                                已选标签
+                                <span class="count-badge" id="selectedCountBadge">3</span>
+                            </div>
+                            <div class="selected-tags-list" id="selectedTagsList">
+                                <div class="selected-tag">
+                                    <span class="tag-name">粤剧研究</span>
+                                    <span class="remove-tag" onclick="removeSelectedTag(this)">✕</span>
+                                </div>
+                                <div class="selected-tag">
+                                    <span class="tag-name">学术论文</span>
+                                    <span class="remove-tag" onclick="removeSelectedTag(this)">✕</span>
+                                </div>
+                                <div class="selected-tag">
+                                    <span class="tag-name">研究人员</span>
+                                    <span class="remove-tag" onclick="removeSelectedTag(this)">✕</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer - 右下角显示标注进度 -->
+            <div class="wb-footer">
+                <div class="wb-footer-btns">
+                    <button class="btn btn-default" onclick="prevDoc()">← 上一篇</button>
+                    <button class="btn btn-primary" onclick="confirmClassification()">确认分类 →</button>
+                    <button class="btn btn-default" onclick="skipDoc()">跳过</button>
+                    <button class="btn btn-default" onclick="releaseTask()">释放任务</button>
+                </div>
+                <div class="progress-info">
+                    标注进度：<strong id="currentProgress">1</strong>/<span id="totalProgress">18</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 当前选中的标签
+        let selectedTags = ['粤剧研究', '学术论文', '研究人员'];
+        let currentIndex = 1;
+        let totalCount = 18;
+        
+        // 更新已选标签显示
+        function updateSelectedTagsDisplay() {
+            const container = document.getElementById('selectedTagsList');
+            const countBadge = document.getElementById('selectedCountBadge');
+            
+            if (selectedTags.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-tertiary); font-size:12px; padding:8px 0;">暂无选中标签，请点击上方标签选择</div>';
+                countBadge.textContent = '0';
+                return;
+            }
+            
+            container.innerHTML = selectedTags.map(tag => `
+                <div class="selected-tag">
+                    <span class="tag-name">${escapeHtml(tag)}</span>
+                    <span class="remove-tag" onclick="removeSelectedTagByName('${escapeHtml(tag)}')">✕</span>
+                </div>
+            `).join('');
+            countBadge.textContent = selectedTags.length;
+        }
+        
+        // 切换标签选中状态
+        function toggleTag(btn) {
+            const tagName = btn.getAttribute('data-tag');
+            if (btn.classList.contains('active')) {
+                btn.classList.remove('active');
+                selectedTags = selectedTags.filter(t => t !== tagName);
+            } else {
+                btn.classList.add('active');
+                selectedTags.push(tagName);
+            }
+            updateSelectedTagsDisplay();
+        }
+        
+        function removeSelectedTag(el) {
+            const tagName = el.closest('.selected-tag').querySelector('.tag-name').textContent;
+            removeSelectedTagByName(tagName);
+        }
+        
+        function removeSelectedTagByName(tagName) {
+            selectedTags = selectedTags.filter(t => t !== tagName);
+            const tagBtn = Array.from(document.querySelectorAll('.tag-btn')).find(btn => btn.getAttribute('data-tag') === tagName);
+            if (tagBtn) tagBtn.classList.remove('active');
+            updateSelectedTagsDisplay();
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 初始化标签按钮
+        function initTagButtons() {
+            document.querySelectorAll('.tag-btn').forEach(btn => {
+                const tagName = btn.getAttribute('data-tag');
+                if (selectedTags.includes(tagName)) {
+                    btn.classList.add('active');
+                }
+                btn.onclick = () => toggleTag(btn);
+            });
+        }
+        
+        // 更新计数和进度显示
+        function updateCounts() {
+            const count = selectedTags.length;
+            document.getElementById('classifiedCount').textContent = count;
+            document.getElementById('currentProgress').textContent = currentIndex;
+            document.getElementById('totalProgress').textContent = totalCount;
+        }
+        
+        function confirmClassification() {
+            if (selectedTags.length === 0) {
+                alert('请至少选择一个分类标签');
+                return;
+            }
+            const tagsText = selectedTags.join('、');
+            alert(`已保存分类：${tagsText}`);
+            // 模拟切换到下一篇
+            if (currentIndex < totalCount) {
+                currentIndex++;
+                updateCounts();
+                // 重置标签选择
+                selectedTags = [];
+                document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
+                updateSelectedTagsDisplay();
+                alert(`已切换到第 ${currentIndex} 篇文档`);
+            } else {
+                alert('已完成所有文档分类！');
+            }
+        }
+        
+        function prevDoc() { 
+            if (currentIndex > 1) {
+                currentIndex--;
+                updateCounts();
+                alert(`切换到第 ${currentIndex} 篇文档`);
+            } else {
+                alert('已是第一篇文档');
+            }
+        }
+        
+        function skipDoc() { 
+            if (currentIndex < totalCount) {
+                currentIndex++;
+                updateCounts();
+                alert(`跳过当前文档，切换到第 ${currentIndex} 篇`);
+            } else {
+                alert('已是最后一篇文档');
+            }
+        }
+        
+        function releaseTask() { alert('任务已释放'); }
+        function saveAll() { 
+            alert(`已提交 ${selectedTags.length} 个分类标签`); 
+        }
+        
+        function toggleSubmenu(el, subId) {
+            event.stopPropagation();
+            const subList = document.getElementById(subId);
+            const navItem = el.closest('.nav-item');
+            if (subList.style.maxHeight && subList.style.maxHeight !== '0px') {
+                subList.style.maxHeight = '0';
+                navItem.classList.remove('open');
+            } else {
+                subList.style.maxHeight = subList.scrollHeight + 'px';
+                navItem.classList.add('open');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initTagButtons();
+            updateSelectedTagsDisplay();
+            updateCounts();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>广东省文化馆 - 数据详情</title>
+<style>
+:root {
+    --primary: #1677ff;
+    --primary-hover: #4096ff;
+    --primary-light: #e6f4ff;
+    --success: #52c41a;
+    --success-light: #f6ffed;
+    --warning: #faad14;
+    --warning-light: #fff7e6;
+    --error: #ff4d4f;
+    --error-light: #fff1f0;
+    --text: #262626;
+    --text-secondary: #595959;
+    --text-tertiary: #8c8c8c;
+    --border: #d9d9d9;
+    --border-light: #f0f0f0;
+    --bg: #f0f2f5;
+    --bg-white: #ffffff;
+    --shadow: 0 1px 2px rgba(0,0,0,0.03), 0 1px 6px -1px rgba(0,0,0,0.02);
+    --radius: 8px;
+    --radius-sm: 6px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+    background: var(--bg);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    color: var(--text);
+    font-size: 14px;
+}
+.sidebar {
+    width: 220px;
+    background: #001529;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+}
+.sidebar-logo {
+    padding: 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-logo h1 { font-size: 16px; font-weight: 600; color: #fff; letter-spacing: 1px; }
+.sidebar-logo span { font-size: 11px; color: var(--primary); display: block; margin-top: 4px; opacity: 0.8; }
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    color: rgba(255,255,255,0.65);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    gap: 10px;
+    border-left: 2px solid transparent;
+}
+.nav-item:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+.nav-item.active { background: rgba(22,119,255,0.15); color: var(--primary); border-left-color: var(--primary); }
+.nav-item .icon { width: 20px; text-align: center; font-size: 13px; flex-shrink: 0; }
+.nav-item .text { flex: 1; }
+.nav-sub {
+    margin-left: 28px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    margin-top: 6px;
+    margin-bottom: 8px;
+}
+.nav-sub-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    gap: 8px;
+    border-radius: var(--radius-sm);
+}
+.nav-sub-item:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+.nav-sub-item.active { background: rgba(22,119,255,0.2); color: var(--primary); }
+.nav-sub-item .dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+.nav-sub-item.active .dot { background: var(--primary); }
+.sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+.user-info { display: flex; align-items: center; gap: 10px; }
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+}
+.user-name { font-size: 12px; color: rgba(255,255,255,0.8); }
+.user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+.main {
+    margin-left: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+.topbar {
+    height: 56px;
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    justify-content: space-between;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.topbar-title { font-size: 15px; font-weight: 500; color: var(--text); }
+.topbar-actions { display: flex; gap: 12px; }
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+.card {
+    background: var(--bg-white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-light);
+    margin-bottom: 20px;
+}
+.card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.card-header h3 { font-size: 14px; font-weight: 500; color: var(--text); }
+.btn {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-default {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+.btn-default:hover { border-color: var(--primary); color: var(--primary); }
+.btn-compact { height: 28px; padding: 0 10px; font-size: 12px; border-radius: 4px; }
+.detail-layout {
+    display: flex;
+    gap: 24px;
+    padding: 20px;
+    min-height: 500px;
+}
+.preview-panel {
+    flex: 1;
+    background: #fafafa;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-light);
+    padding: 20px;
+}
+.annotation-panel {
+    flex: 1;
+    background: #fafafa;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-light);
+    padding: 20px;
+}
+.section-title {
+    font-weight: 500;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+}
+.preview-content {
+    background: var(--bg-white);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+.annotation-item {
+    background: var(--bg-white);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-light);
+}
+.annotation-label {
+    font-weight: 500;
+    color: var(--primary);
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+.info-row {
+    display: flex;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+.info-label { width: 80px; color: var(--text-tertiary); }
+.info-value { flex: 1; color: var(--text); }
+</style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>广东省文化馆</h1>
+        <span>非遗数字化保护平台</span>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item"><span class="icon">☰</span><span class="text">数字资源库</span></div>
+        <div class="nav-item"><span class="icon">▦</span><span class="text">非遗数据集</span></div>
+        <div class="nav-item active"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-sub">
+            <div class="nav-sub-item" onclick="location.href='专题卡片列表.html'"><span class="dot"></span><span>专题视图</span></div>
+            <div class="nav-sub-item" onclick="location.href='专题详情.html'"><span class="dot"></span><span>数据浏览</span></div>
+        </div>
+        <div class="nav-item"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info"><div class="user-avatar">陈</div><div><div class="user-name">陈敏</div><div class="user-role">非遗保护专员</div></div></div>
+    </div>
+</div>
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-title" id="pageTitle">数据详情</div>
+        <div class="topbar-actions"><button class="btn btn-default btn-compact" onclick="history.back()">返回</button></div>
+    </div>
+    <div class="content">
+        <div class="card">
+            <div class="card-header"><h3 id="dataName">加载中...</h3></div>
+            <div class="detail-layout">
+                <div class="preview-panel">
+                    <div class="section-title">原始数据预览</div>
+                    <div class="preview-content" id="previewContent">加载中...</div>
+                    <div style="margin-top:16px;"><div class="info-row"><div class="info-label">数据编号</div><div class="info-value" id="dataId"></div></div><div class="info-row"><div class="info-label">资源类型</div><div class="info-value" id="dataType"></div></div><div class="info-row"><div class="info-label">来源机构</div><div class="info-value" id="dataSource"></div></div><div class="info-row"><div class="info-label">收录时间</div><div class="info-value" id="dataTime"></div></div></div>
+                </div>
+                <div class="annotation-panel">
+                    <div class="section-title">标注结果</div>
+                    <div id="annotationList">加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const dataId = urlParams.get('id') || 'ICH-001';
+const topicId = urlParams.get('topicId') || 'GD-ICH-001';
+const dirName = urlParams.get('dir') || '全部';
+const sampleData = {
+    "ICH-001": { name: "广东音乐·赛龙夺锦", type: "音频", source: "广东省文化馆", time: "2024-03-15", preview: "【音频元数据】\n曲目名称：赛龙夺锦\n演奏形式：民乐合奏\n时长：6分32秒\n采样率：44.1kHz\n比特率：320kbps\n\n【内容摘要】\n广东音乐经典曲目，描绘端午节龙舟竞渡的热烈场面，旋律激昂奋进。\n\n【数字化信息】\n数字化时间：2024-03-15\n数字化负责人：陈敏\n保存格式：MP3 / WAV", annotations: [{ label: "非遗类别", value: "传统音乐 - 广东音乐", confidence: "0.98" },{ label: "传承人", value: "余其伟", confidence: "0.95" },{ label: "时代背景", value: "20世纪30年代创作", confidence: "0.92" },{ label: "艺术特点", value: "高胡领奏，节奏明快，运用'催马'技法表现竞渡场景", confidence: "0.96" }] },
+    "ICH-002": { name: "潮州工夫茶艺", type: "视频", source: "潮州非遗中心", time: "2024-02-10", preview: "【视频元数据】\n时长：45分钟\n分辨率：1920x1080\n帧率：25fps\n编码：H.264\n\n【内容说明】\n记录潮州工夫茶二十一式完整流程，包括备器、纳茶、候汤、冲点、淋罐、烫杯、洒茶等工序。", annotations: [{ label: "非遗类别", value: "民俗 - 茶艺", confidence: "0.99" },{ label: "相关非遗项目", value: "潮州工夫茶艺（国家级非遗）", confidence: "0.98" },{ label: "关键工序标注", value: "关公巡城、韩信点兵", confidence: "0.97" }] }
+};
+const data = sampleData[dataId] || { name: dataId, type: "文档", source: "广东省文化馆", time: "2024-01-01", preview: "暂无原始数据预览", annotations: [{ label: "备注", value: "该资源暂无标注信息", confidence: "1.0" }] };
+document.getElementById("pageTitle").innerHTML = `数据详情 / ${data.name}`;
+document.getElementById("dataName").innerHTML = data.name;
+document.getElementById("previewContent").innerHTML = data.preview;
+document.getElementById("dataId").innerHTML = dataId;
+document.getElementById("dataType").innerHTML = data.type;
+document.getElementById("dataSource").innerHTML = data.source;
+document.getElementById("dataTime").innerHTML = data.time;
+const annoContainer = document.getElementById("annotationList");
+annoContainer.innerHTML = "";
+data.annotations.forEach(anno => { annoContainer.innerHTML += `<div class="annotation-item"><div class="annotation-label">${anno.label}</div><div>${anno.value}</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:6px;">置信度: ${anno.confidence}</div></div>`; });
+if(data.annotations.length === 0) annoContainer.innerHTML = '<div class="annotation-item">暂无标注数据</div>';
+</script>
+</body>
+</html>
