@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作台</title>
+<style>
+:root {
+--primary: #1677ff;
+--primary-hover: #4096ff;
+--primary-light: #e6f4ff;
+--success: #52c41a;
+--success-light: #f6ffed;
+--warning: #faad14;
+--warning-light: #fff7e6;
+--error: #ff4d4f;
+--text: #262626;
+--text-secondary: #595959;
+--text-tertiary: #8c8c8c;
+--border: #d9d9d9;
+--border-light: #f0f0f0;
+--bg: #fafafa;
+--bg-white: #ffffff;
+--shadow: 0 1px 2px rgba(0,0,0,0.03),0 1px 6px -1px rgba(0,0,0,0.02);
+--radius: 8px;
+--radius-sm: 6px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif; background:#f0f2f5; height:100vh; overflow:hidden; display:flex; color:var(--text); font-size:14px; }
+
+/* Sidebar */
+.sidebar { width:220px; background:#1a1a2e; display:flex; flex-direction:column; height:100vh; position:fixed; left:0; top:0; z-index:100; }
+.sidebar-logo { padding:24px 20px; border-bottom:1px solid rgba(255,255,255,0.1); }
+.sidebar-logo h1 { font-size:16px; color:#fff; font-weight:600; }
+.sidebar-logo span { font-size:12px; color:var(--primary); display:block; margin-top:4px; }
+.sidebar-nav { flex:1; padding:12px 0; overflow-y:auto; }
+.nav-item { display:flex; align-items:center; padding:12px 20px; color:rgba(255,255,255,0.85); font-size:14px; cursor:pointer; transition:all 0.2s; gap:10px; user-select:none; font-weight:600; text-decoration:none; }
+.nav-item:hover { background:rgba(255,255,255,0.05); color:#fff; }
+.nav-item.has-sub { justify-content:flex-start; }
+.nav-item.has-sub.open .icon { color:var(--primary); }
+.nav-item .icon { width:20px; text-align:center; font-size:14px; font-weight:bold; color:#8c8c8c; flex-shrink:0; }
+.nav-item .text { flex:1; }
+.nav-item .arrow { font-size:10px; color:rgba(255,255,255,0.4); transition:transform 0.2s; }
+.nav-item.has-sub.open .arrow { transform:rotate(90deg); }
+.nav-sub-list { display:none; background:rgba(0,0,0,0.15); }
+.nav-sub-list.open { display:block; }
+.nav-sub-item { display:flex; align-items:center; padding:10px 20px 10px 50px; color:rgba(255,255,255,0.7); font-size:13px; cursor:pointer; transition:all 0.2s; gap:8px; text-decoration:none; }
+.nav-sub-item:hover { color:#fff; background:rgba(255,255,255,0.05); }
+.nav-sub-item.active { color:var(--primary); }
+.nav-sub-item .dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.3); flex-shrink:0; }
+.nav-sub-item.active .dot { background:var(--primary); }
+
+/* Main */
+.main { margin-left:220px; flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+.topbar { height:56px; background:var(--bg-white); border-bottom:1px solid var(--border-light); display:flex; align-items:center; padding:0 24px; justify-content:space-between; }
+.topbar-title { font-size:15px; color:var(--text); font-weight:500; }
+.topbar-actions { display:flex; gap:12px; }
+.content { flex:1; overflow-y:auto; padding:16px; }
+
+/* Card */
+.card { background:var(--bg-white); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border-light); }
+.card-title { font-size:14px; font-weight:500; color:var(--text); padding:16px 20px; border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center; }
+.card-title .more { font-size:12px; color:var(--text-tertiary); cursor:pointer; }
+.card-title .more:hover { color:var(--primary); }
+
+/* Stats Grid */
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:20px; }
+.stat-card { background:var(--bg-white); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); border:1px solid var(--border-light); }
+.stat-card .label { font-size:13px; color:var(--text-secondary); margin-bottom:8px; }
+.stat-card .value { font-size:28px; color:var(--text); font-weight:600; }
+.stat-card .sub { font-size:12px; color:var(--success); margin-top:4px; }
+.stat-card .sub.red { color:var(--error); }
+
+/* Buttons */
+.btn { height:34px; padding:0 16px; border-radius:var(--radius-sm); font-size:14px; cursor:pointer; border:none; display:inline-flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s; font-weight:500; }
+.btn-primary { background:var(--primary); color:#fff; }
+.btn-primary:hover { background:var(--primary-hover); }
+.btn-default { background:var(--bg-white); border:1px solid var(--border); color:var(--text); }
+.btn-default:hover { border-color:var(--primary); color:var(--primary); }
+
+/* Status Tags */
+.status-tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:12px; border:1px solid; }
+.status-ing { background:var(--primary-light); color:var(--primary); border-color:#91cfff; }
+.status-done { background:var(--success-light); color:var(--success); border-color:#b7eb8f; }
+.status-wait { background:var(--warning-light); color:var(--warning); border-color:#ffd591; }
+
+/* Todo List */
+.todo-list { }
+.todo-item { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border-light); cursor:pointer; transition:background 0.2s; }
+.todo-item:hover { background:#f8f9ff; }
+.todo-checkbox { width:18px; height:18px; border-radius:4px; border:2px solid var(--border); flex-shrink:0; margin-top:2px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.todo-checkbox.done { background:var(--success); border-color:var(--success); color:#fff; }
+.todo-content { flex:1; }
+.todo-title { font-size:13px; color:var(--text); margin-bottom:4px; }
+.todo-item.done .todo-title { text-decoration:line-through; color:var(--text-tertiary); }
+.todo-meta { display:flex; gap:12px; font-size:11px; color:var(--text-tertiary); }
+.todo-tag { padding:1px 6px; border-radius:3px; font-size:11px; }
+.todo-tag.urgent { background:#fff1f0; color:#ff4d4f; }
+.todo-tag.normal { background:var(--primary-light); color:var(--primary); }
+.todo-tag.backlog { background:#f5f5f5; color:var(--text-tertiary); }
+
+/* Activity Feed */
+.activity-list { }
+.activity-item { display:flex; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border-light); }
+.activity-item:last-child { border-bottom:none; }
+.activity-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; background:#f5f5f5; color:var(--text-secondary); }
+.activity-body { flex:1; }
+.activity-text { font-size:13px; color:var(--text); line-height:1.5; margin-bottom:4px; }
+.activity-text strong { color:var(--primary); }
+.activity-time { font-size:11px; color:var(--text-tertiary); }
+.activity-dataset { font-size:12px; color:var(--text-secondary); background:#f5f5f5; padding:2px 8px; border-radius:3px; display:inline-block; margin-top:4px; }
+
+/* 快捷入口 - 一行2个按钮网格布局 */
+.quick-menu { padding:12px 16px; }
+.quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.quick-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; cursor:pointer; transition:all 0.2s; background:#f8f9fa; border:1px solid var(--border-light); }
+.quick-item:hover { background:var(--primary-light); border-color:var(--primary); }
+.quick-icon { width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:var(--primary); }
+.quick-icon svg { width:20px; height:20px; fill:currentColor; }
+.quick-label { font-size:13px; font-weight:500; color:var(--text); flex:1; }
+
+/* Progress Bar */
+.progress-bar { height:6px; background:#f0f0f0; border-radius:3px; overflow:hidden; }
+.progress-fill { height:100%; background:var(--primary); border-radius:3px; transition:width 0.3s; }
+.progress-fill.green { background:var(--success); }
+.progress-fill.orange { background:var(--warning); }
+
+/* Overview Table */
+.overview-table { overflow-x:auto; }
+.overview-table table { width:100%; border-collapse:collapse; }
+.overview-table th { text-align:left; padding:10px 16px; font-size:12px; color:var(--text-secondary); font-weight:500; border-bottom:1px solid var(--border); }
+.overview-table td { padding:10px 16px; font-size:13px; border-bottom:1px solid var(--border-light); }
+.overview-table tr:hover td { background:#f8f9ff; }
+
+/* Badge */
+.badge { display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; border-radius:9px; background:var(--error); color:#fff; font-size:11px; padding:0 5px; }
+
+.page { display:none; }
+.page.active { display:block; }
+
+/* 卡片网格容器 */
+.card-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:0; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>数据集管理平台</h1>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+    </div>
+</div>
+<div class="main">
+<div class="topbar">
+<div class="topbar-title">工作台</div>
+<div class="topbar-actions">
+<button class="btn btn-default">🔔 <span class="badge">3</span></button>
+<button class="btn btn-default">⚙ 设置</button>
+</div>
+</div>
+<div class="content">
+<div class="page active">
+
+<!-- 数据总览 -->
+<div class="stats-grid">
+<div class="stat-card"><div class="label">数据集总数</div><div class="value">28</div><div class="sub">↑ 3 本月新增</div></div>
+<div class="stat-card"><div class="label">数据总量</div><div class="value">12.6万</div><div class="sub">条</div></div>
+<div class="stat-card"><div class="label">标注进行中</div><div class="value">8</div><div class="sub red">↑ 2 待审核</div></div>
+<div class="stat-card"><div class="label">已完成标注</div><div class="value">5.2万</div><div class="sub">条</div></div>
+</div>
+
+<!-- 2x2 网格布局，卡片间距20px -->
+<div class="card-grid">
+
+<!-- 卡片1: 个人待办 -->
+<div class="card">
+<div class="card-title"><span>个人待办</span><span class="more">查看全部 →</span></div>
+<div style="padding:0 16px;">
+<div class="todo-list">
+<div class="todo-item"><div class="todo-checkbox"></div><div class="todo-content"><div class="todo-title">完成活动类型标注-批次1</div><div class="todo-meta"><span>⏰ 今天 18:00</span><span class="todo-tag urgent">紧急</span></div></div></div>
+<div class="todo-item"><div class="todo-checkbox"></div><div class="todo-content"><div class="todo-title">审核关键词提取任务标注结果</div><div class="todo-meta"><span>⏰ 明天 12:00</span><span class="todo-tag normal">进行中</span></div></div></div>
+<div class="todo-item"><div class="todo-checkbox done"></div><div class="todo-content"><div class="todo-title">提交情感分析数据集</div><div class="todo-meta"><span>✅ 已完成</span><span class="todo-tag backlog">归档</span></div></div></div>
+<div class="todo-item"><div class="todo-checkbox"></div><div class="todo-content"><div class="todo-title">补充非遗传承专题数据标注</div><div class="todo-meta"><span>⏰ 2026-05-23</span><span class="todo-tag normal">待领取</span></div></div></div>
+</div>
+<div style="padding:12px 0;"><button class="btn btn-primary" style="width:100%;">+ 添加待办</button></div>
+</div>
+</div>
+
+<!-- 卡片2: 快捷入口（一行2个按钮，参考无人机管理、飞行工单样式） -->
+<div class="card">
+<div class="card-title"><span>快捷入口</span></div>
+<div class="quick-menu">
+<div class="quick-grid">
+<div class="quick-item" onclick="alert('发起标注')">
+<div class="quick-icon">
+<svg viewBox="0 0 1024 1024">
+<path fill="currentColor" d="M176 416a112 112 0 1 1 0 224 112 112 0 0 1 0-224m336 0a112 112 0 1 1 0 224 112 112 0 0 1 0-224m336 0a112 112 0 1 1 0 224 112 112 0 0 1 0-224"></path>
+</svg>
+</div>
+<span class="quick-label">发起标注</span>
+</div>
+<div class="quick-item" onclick="alert('数据集管理')">
+<div class="quick-icon">
+<svg viewBox="0 0 1024 1024">
+<path fill="currentColor" d="M832 384H576V128H192v768h640V384zM736 128l128 128h-128V128z"></path>
+</svg>
+</div>
+<span class="quick-label">数据集管理</span>
+</div>
+<div class="quick-item" onclick="alert('数据资源')">
+<div class="quick-icon">
+<svg viewBox="0 0 1024 1024">
+<path fill="currentColor" d="M512 832a320 320 0 1 0 0-640 320 320 0 0 0 0 640zm0 64a384 384 0 1 1 0-768 384 384 0 0 1 0 768z"></path>
+<path fill="currentColor" d="M512 448a64 64 0 1 0 0-128 64 64 0 0 0 0 128zm0 64a128 128 0 1 1 0-256 128 128 0 0 1 0 256z"></path>
+</svg>
+</div>
+<span class="quick-label">数据资源</span>
+</div>
+<div class="quick-item" onclick="alert('专题库')">
+<div class="quick-icon">
+<svg viewBox="0 0 1024 1024">
+<path fill="currentColor" d="M832 384H576V128H192v768h640V384zM736 128l128 128h-128V128zM256 256h192v64H256v-64zm0 128h192v64H256v-64zm0 128h192v64H256v-64zm0 128h192v64H256v-64zm384 0h64v64h-64v-64zm0-128h64v64h-64v-64z"></path>
+</svg>
+</div>
+<span class="quick-label">专题库</span>
+</div>
+<div class="quick-item" onclick="alert('系统设置')">
+<div class="quick-icon">
+<svg viewBox="0 0 1024 1024">
+<path fill="currentColor" d="M512 704a192 192 0 1 0 0-384 192 192 0 0 0 0 384zm0 64a256 256 0 1 1 0-512 256 256 0 0 1 0 512z"></path>
+<path fill="currentColor" d="M512 576a64 64 0 1 0 0-128 64 64 0 0 0 0 128zm0 64a128 128 0 1 1 0-256 128 128 0 0 1 0 256z"></path>
+</svg>
+</div>
+<span class="quick-label">系统设置</span>
+</div>
+<div class="quick-item" onclick="alert('标注进度')">
+<div class="quick-icon">
+<svg viewBox="0 0 1024 1024">
+<path fill="currentColor" d="M512 896a384 384 0 1 0 0-768 384 384 0 0 0 0 768zm0 64a448 448 0 1 1 0-896 448 448 0 0 1 0 896z"></path>
+<path fill="currentColor" d="M480 256h64v320h-64z"></path>
+<path fill="currentColor" d="M480 640h64v64h-64z"></path>
+</svg>
+</div>
+<span class="quick-label">标注进度</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 卡片3: 数据集动态 -->
+<div class="card">
+<div class="card-title"><span>数据集动态</span><span class="more">更多 →</span></div>
+<div class="activity-list">
+<div class="activity-item"><div class="activity-icon">↑</div><div class="activity-body"><div class="activity-text"><strong>李四</strong> 上传了新数据集 <strong>广东省文化馆活动文本 v3.2</strong></div><div class="activity-time">10分钟前</div></div></div>
+<div class="activity-item"><div class="activity-icon">✎</div><div class="activity-body"><div class="activity-text"><strong>王五</strong> 完成了标注任务，进度 85%</div><div class="activity-time">30分钟前</div></div></div>
+<div class="activity-item"><div class="activity-icon">✓</div><div class="activity-body"><div class="activity-text"><strong>赵六</strong> 提交了任务至审核队列</div><div class="activity-time">1小时前</div></div></div>
+<div class="activity-item"><div class="activity-icon">📤</div><div class="activity-body"><div class="activity-text">数据集已发布上线</div><div class="activity-time">2小时前</div></div></div>
+</div>
+</div>
+
+<!-- 卡片4: 数据集总览 -->
+<div class="card">
+<div class="card-title"><span>数据集总览</span><span class="more">查看全部 →</span></div>
+<div class="overview-table">
+<table>
+<thead>
+<tr>
+<th>数据集名称</th><th>类型</th><th>数据量</th><th>标注进度</th><th>状态</th><th>更新时间</th>
+</tr>
+</thead>
+<tbody>
+<tr><td style="color:var(--primary);cursor:pointer;">广东省文化馆活动文本</td><td>文本</td><td>1,240</td><td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:85%;"></div></div><span>85%</span></div></td><td><span class="status-tag status-ing">标注中</span></td><td>2026-05-21</td></tr>
+<tr><td style="color:var(--primary);cursor:pointer;">非遗传承人访谈记录</td><td>文本</td><td>580</td><td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill green" style="width:100%;"></div></div><span>100%</span></div></td><td><span class="status-tag status-done">已完成</span></td><td>2026-05-20</td></tr>
+<tr><td style="color:var(--primary);cursor:pointer;">社区文化活动满意度调查</td><td>问卷</td><td>320</td><td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill orange" style="width:45%;"></div></div><span>45%</span></div></td><td><span class="status-tag status-wait">待领取</span></td><td>2026-05-19</td></tr>
+<tr><td style="color:var(--primary);cursor:pointer;">传统文化活动视频素材</td><td>视频</td><td>120</td><td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:0%;"></div></div><span>0%</span></div></td><td><span class="status-tag status-wait">待标注</span></td><td>2026-05-18</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<script>
+function toggleTodo(el) {
+    var checkbox = el.querySelector('.todo-checkbox');
+    checkbox.classList.toggle('done');
+    el.classList.toggle('done');
+}
+</script>
+</body>
+</html>

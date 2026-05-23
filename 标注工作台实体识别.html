@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实体分类标注台 - 广东省文化馆</title>
+    <style>
+        :root {
+            --primary: #1677ff;
+            --primary-hover: #4096ff;
+            --primary-light: #e6f4ff;
+            --success: #52c41a;
+            --success-light: #f6ffed;
+            --warning: #faad14;
+            --warning-light: #fff7e6;
+            --error: #ff4d4f;
+            --text: #262626;
+            --text-secondary: #595959;
+            --text-tertiary: #8c8c8c;
+            --border: #d9d9d9;
+            --border-light: #f0f0f0;
+            --bg: #fafafa;
+            --bg-white: #ffffff;
+            --radius: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Left Sidebar */
+        .sidebar { width: 200px; background: #1a1a2e; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; z-index: 10; }
+        .sidebar-logo { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 14px; color: #fff; font-weight: 600; }
+        .sidebar-logo span { font-size: 11px; color: var(--primary); display: block; margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; padding: 10px 16px; color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; transition: all 0.2s; gap: 8px; user-select: none; border-right: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.has-sub { justify-content: flex-start; }
+        .nav-item.has-sub.open { background: rgba(74,158,255,0.15); color: var(--primary); border-right-color: var(--primary); }
+        .nav-item .icon { width: 18px; text-align: center; font-size: 12px; color: #8c8c8c; flex-shrink: 0; }
+        .nav-item .text { flex: 1; }
+        .nav-item .arrow { font-size: 10px; color: rgba(255,255,255,0.4); transition: transform 0.2s; }
+        .nav-item.has-sub.open .arrow { transform: rotate(90deg); }
+        .nav-sub-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgba(0,0,0,0.15); }
+        .nav-sub-item { display: flex; align-items: center; padding: 8px 16px 8px 42px; color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; transition: all 0.2s; gap: 8px; }
+        .nav-sub-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-sub-item.active { color: var(--primary); }
+        .nav-sub-item .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+        .nav-sub-item.active .dot { background: var(--primary); }
+        .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; }
+        .user-name { font-size: 12px; color: rgba(255,255,255,0.8); }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+        /* Main area */
+        .main { margin-left: 200px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* Topbar */
+        .topbar {
+            height: 48px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-tertiary); }
+        .topbar-breadcrumb span { color: var(--text); }
+        .topbar-actions { display: flex; gap: 12px; }
+
+        /* Button */
+        .btn { height: 32px; padding: 0 14px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; font-weight: 500; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-default { background: var(--bg-white); border: 1px solid var(--border); color: var(--text); }
+        .btn-default:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Workbench */
+        .workbench {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 12px 24px;
+            background: #f0f2f5;
+            max-height: 1000px;
+            height: 1000px;
+        }
+
+        .wb-header {
+            background: var(--bg-white);
+            border-radius: var(--radius) var(--radius) 0 0;
+            border: 1px solid var(--border-light);
+            border-bottom: none;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wb-header-left .wb-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .wb-header-left .wb-meta { font-size: 12px; color: var(--text-tertiary); display: flex; gap: 16px; flex-wrap: wrap; }
+        .wb-header-right { display: flex; gap: 10px; align-items: center; }
+        .divider-1, .divider-2 { height: 1px; background: var(--border-light); }
+        .wb-nav {
+            background: var(--bg-white);
+            border-left: 1px solid var(--border-light);
+            border-right: 1px solid var(--border-light);
+            padding: 0 20px;
+            display: flex;
+            gap: 24px;
+        }
+        .wb-nav-item {
+            padding: 10px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+        .wb-nav-item:hover { color: var(--text); }
+        .wb-nav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .wb-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            min-height: 0;
+        }
+
+        /* 中间标注区 - 全宽 */
+        .annotation-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .annotation-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg);
+        }
+        .annotation-header-left { font-size: 13px; color: var(--text); font-weight: 500; }
+        .annotation-header-right { font-size: 11px; color: var(--text-tertiary); display: flex; gap: 16px; }
+        .annotation-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        /* 文本卡片 */
+        .text-card {
+            background: var(--bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-light);
+        }
+        .text-card-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+        .text-card-meta { display: flex; gap: 16px; font-size: 11px; color: var(--text-tertiary); margin-bottom: 16px; }
+        .text-card-content {
+            font-size: 15px;
+            line-height: 2.2;
+            color: var(--text);
+            user-select: text;
+        }
+
+        /* 实体高亮样式 */
+        .entity {
+            display: inline;
+            padding: 2px 6px;
+            margin: 0 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-bottom: 2px solid;
+        }
+        .entity:hover { opacity: 0.75; transform: scale(1.01); }
+        .entity-person { background: rgba(22,119,255,0.12); color: #1677ff; border-bottom-color: #1677ff; }
+        .entity-location { background: rgba(82,196,26,0.12); color: #52c41a; border-bottom-color: #52c41a; }
+        .entity-org { background: rgba(114,46,209,0.12); color: #722ed1; border-bottom-color: #722ed1; }
+        .entity-time { background: rgba(250,173,20,0.12); color: #faad14; border-bottom-color: #faad14; }
+        .entity-activity { background: rgba(255,77,79,0.12); color: #ff4d4f; border-bottom-color: #ff4d4f; }
+
+        /* 标注操作区 */
+        .annotation-area { margin-top: 8px; }
+        .annotation-area-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+        .type-toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .type-btn {
+            padding: 6px 20px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            background: var(--bg-white);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .type-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+        .type-btn.active { font-weight: 600; box-shadow: var(--shadow-sm); }
+        .type-btn[data-type="person"].active { background: rgba(22,119,255,0.12); border-color: #1677ff; color: #1677ff; }
+        .type-btn[data-type="location"].active { background: rgba(82,196,26,0.12); border-color: #52c41a; color: #52c41a; }
+        .type-btn[data-type="org"].active { background: rgba(114,46,209,0.12); border-color: #722ed1; color: #722ed1; }
+        .type-btn[data-type="time"].active { background: rgba(250,173,20,0.12); border-color: #faad14; color: #faad14; }
+        .type-btn[data-type="activity"].active { background: rgba(255,77,79,0.12); border-color: #ff4d4f; color: #ff4d4f; }
+
+        .annotation-hint {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-bottom: 20px;
+            padding: 8px 12px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--primary);
+        }
+
+        /* 标注结果展示 */
+        .entity-result {
+            margin-top: 20px;
+            border-top: 1px solid var(--border-light);
+            padding-top: 16px;
+        }
+        .entity-result-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+        .entity-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+        .entity-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            background: #f9fafb;
+            border: 1px solid var(--border-light);
+            transition: all 0.2s;
+        }
+        .entity-tag:hover { background: var(--bg-white); box-shadow: var(--shadow-sm); }
+        .entity-tag-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .entity-tag[data-type="person"] .entity-tag-dot { background: #1677ff; }
+        .entity-tag[data-type="location"] .entity-tag-dot { background: #52c41a; }
+        .entity-tag[data-type="org"] .entity-tag-dot { background: #722ed1; }
+        .entity-tag[data-type="time"] .entity-tag-dot { background: #faad14; }
+        .entity-tag[data-type="activity"] .entity-tag-dot { background: #ff4d4f; }
+        .entity-tag-label { color: var(--text-secondary); font-size: 11px; }
+        .entity-tag-value { font-weight: 600; font-size: 12px; }
+        .entity-tag[data-type="person"] .entity-tag-value { color: #1677ff; }
+        .entity-tag[data-type="location"] .entity-tag-value { color: #52c41a; }
+        .entity-tag[data-type="org"] .entity-tag-value { color: #722ed1; }
+        .entity-tag[data-type="time"] .entity-tag-value { color: #faad14; }
+        .entity-tag[data-type="activity"] .entity-tag-value { color: #ff4d4f; }
+        .delete-entity {
+            color: var(--text-tertiary);
+            cursor: pointer;
+            margin-left: 6px;
+            font-size: 12px;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .delete-entity:hover { color: var(--error); background: rgba(255,77,79,0.1); }
+
+        /* 右侧边栏 */
+        .wb-sidebar {
+            width: 280px;
+            border-left: 1px solid var(--border-light);
+            overflow-y: auto;
+            background: var(--bg-white);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .wb-sidebar-section {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .wb-sidebar-section:last-child { border-bottom: none; }
+        .wb-sidebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .wb-sidebar-title .count-badge {
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .wb-sidebar-item { display: flex; justify-content: space-between; padding: 8px 0; font-size: 12px; }
+        .wb-sidebar-item .label { color: var(--text-tertiary); }
+        .wb-sidebar-item .value { color: var(--text); font-weight: 500; }
+        .wb-sidebar-item .value.green { color: var(--success); }
+        .wb-sidebar-item .value.yellow { color: var(--warning); }
+        .progress-bar { height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #69c0ff); border-radius: 3px; }
+        .progress-text { font-size: 11px; color: var(--text-tertiary); margin-top: 6px; text-align: center; }
+
+        /* Footer */
+        .wb-footer {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+        .wb-footer-btns { display: flex; gap: 10px; }
+        .wb-page-info { font-size: 12px; color: var(--text-tertiary); }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>数据集管理平台</h1>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+    </div>
+</div>
+<div class="main">
+        <div class="topbar">
+            <div class="topbar-breadcrumb">
+                <span>广东省文化馆</span><span>›</span><span>数字资源标注</span><span>›</span>
+                <span>实体分类</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-default" onclick="history.back()">返回列表</button>
+                <button class="btn btn-primary" onclick="submitAll()">提交全部</button>
+            </div>
+        </div>
+
+        <div class="workbench">
+            <div class="wb-header">
+                <div class="wb-header-left">
+                    <div class="wb-title">实体识别标注 · 粤剧文献数据集</div>
+                    <div class="wb-meta">
+                        <span>任务ID：GDSG-NER-001</span>
+                        <span>模板：实体识别模板</span>
+                        <span>已标注：<span id="entityCount">3</span>/28</span>
+                        <span>准确率：96.2%</span>
+                    </div>
+                </div>
+                <div class="wb-header-right">
+                    <div style="font-size:12px;color:var(--text-secondary);">标注员：李华</div>
+                </div>
+            </div>
+            <div class="divider-1"></div>
+            <div class="wb-nav">
+                <div class="wb-nav-item active">待标注 (25)</div>
+                <div class="wb-nav-item">已标注 (3)</div>
+                <div class="wb-nav-item">全部数据 (28)</div>
+            </div>
+            <div class="divider-2"></div>
+
+            <div class="wb-body">
+                <!-- 中间标注区 - 聚焦原文 -->
+                <div class="annotation-main">
+                    <div class="annotation-header">
+                        <div class="annotation-header-left">
+                            <span>当前文档：GDSG-NER-0042</span>
+                        </div>
+                        <div class="annotation-header-right">
+                            <span style="color: var(--success);">✓ 已标注 3 处实体</span>
+                            <span>标注进度：3/28</span>
+                        </div>
+                    </div>
+                    <div class="annotation-content">
+                        <!-- 原文卡片 -->
+                        <div class="text-card">
+                            <div class="text-card-title">原文内容</div>
+                            <div class="text-card-meta">
+                                <span>来源：粤剧文献库</span>
+                                <span>入库时间：2024-10-15</span>
+                                <span>字数：156字</span>
+                            </div>
+                            <div class="text-card-content" id="textContent">
+                                《<span class="entity entity-org" onclick="removeEntity(this)" title="点击取消标注">帝女花</span>》是粤剧经典剧目，由<span class="entity entity-person" onclick="removeEntity(this)" title="点击取消标注">唐涤生</span>根据清代传奇改编，<span class="entity entity-time" onclick="removeEntity(this)" title="点击取消标注">1957年</span>首演于香港。故事讲述明末崇祯年间，长平公主与周世显的爱情悲剧。全剧以“香夭”一折最为著名，唱腔哀婉动人，被誉为粤剧舞台的千古绝唱。
+                            </div>
+                        </div>
+
+                        <!-- 标注操作区 -->
+                        <div class="annotation-area">
+                            <div class="annotation-area-title">选择实体类型，选中文本进行标注</div>
+                            <div class="type-toolbar">
+                                <button class="type-btn" data-type="person" onclick="selectType(this, 'person')">人物</button>
+                                <button class="type-btn" data-type="location" onclick="selectType(this, 'location')">地点</button>
+                                <button class="type-btn" data-type="org" onclick="selectType(this, 'org')">作品</button>
+                                <button class="type-btn" data-type="time" onclick="selectType(this, 'time')">时间</button>
+                                <button class="type-btn" data-type="activity" onclick="selectType(this, 'activity')">活动</button>
+                            </div>
+                            <div class="annotation-hint" id="hintText">
+                                💡 提示：先选择上方实体类型，再拖动鼠标选中文本进行标注。点击已标注实体可取消
+                            </div>
+
+                            <!-- 标注结果展示 -->
+                            <div class="entity-result">
+                                <div class="entity-result-title">已标注实体（共 <span id="entityResultCount">3</span> 处）</div>
+                                <div class="entity-tags" id="entityTags">
+                                    <div class="entity-tag" data-type="org">
+                                        <span class="entity-tag-dot"></span>
+                                        <span class="entity-tag-label">作品</span>
+                                        <span class="entity-tag-value">帝女花</span>
+                                        <span class="delete-entity" onclick="deleteEntityTag(this)">✕</span>
+                                    </div>
+                                    <div class="entity-tag" data-type="person">
+                                        <span class="entity-tag-dot"></span>
+                                        <span class="entity-tag-label">人物</span>
+                                        <span class="entity-tag-value">唐涤生</span>
+                                        <span class="delete-entity" onclick="deleteEntityTag(this)">✕</span>
+                                    </div>
+                                    <div class="entity-tag" data-type="time">
+                                        <span class="entity-tag-dot"></span>
+                                        <span class="entity-tag-label">时间</span>
+                                        <span class="entity-tag-value">1957年</span>
+                                        <span class="delete-entity" onclick="deleteEntityTag(this)">✕</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧边栏（仅进度） -->
+                <div class="wb-sidebar">
+                    <div class="wb-sidebar-section">
+                        <div class="wb-sidebar-title">
+                            标注进度
+                            <span class="count-badge" id="progressBadge">3/28</span>
+                        </div>
+                        <div class="wb-sidebar-item"><span class="label">总数据量</span><span class="value">28</span></div>
+                        <div class="wb-sidebar-item"><span class="label">已标注</span><span class="value green" id="sidebarCount">3</span></div>
+                        <div class="wb-sidebar-item"><span class="label">待标注</span><span class="value yellow">25</span></div>
+                        <div class="wb-sidebar-item"><span class="label">标注准确率</span><span class="value">96.2%</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 11%;"></div></div>
+                        <div class="progress-text">整体进度 11%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wb-footer">
+                <div class="wb-footer-btns">
+                    <button class="btn btn-default" onclick="prevData()">← 上一条</button>
+                    <button class="btn btn-primary" onclick="confirmAnnotation()">确认标注 →</button>
+                    <button class="btn btn-default" onclick="skipData()">跳过</button>
+                    <button class="btn btn-default" onclick="releaseTask()">释放任务</button>
+                </div>
+                <div class="wb-page-info">第 1/25 条 · 待标注</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentType = 'person';
+        const typeNames = { person: '人物', location: '地点', org: '作品', time: '时间', activity: '活动' };
+        
+        // 选中实体类型
+        function selectType(el, type) {
+            currentType = type;
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            el.classList.add('active');
+            
+            const hint = document.getElementById('hintText');
+            if (hint) {
+                hint.innerHTML = `💡 当前选中：${typeNames[type]}，拖动鼠标选中文本进行标注`;
+            }
+        }
+        
+        // 移除实体（点击实体时）
+        function removeEntity(el) {
+            const text = el.textContent;
+            el.outerHTML = text;
+            
+            // 从右侧列表中删除对应项
+            const tagToRemove = Array.from(document.querySelectorAll('.entity-tag')).find(tag => 
+                tag.querySelector('.entity-tag-value')?.textContent === text
+            );
+            if (tagToRemove) tagToRemove.remove();
+            updateEntityCount();
+        }
+        
+        // 删除实体标签
+        function deleteEntityTag(el) {
+            const tag = el.closest('.entity-tag');
+            const entityValue = tag.querySelector('.entity-tag-value')?.textContent;
+            if (entityValue) {
+                // 从文本中移除高亮
+                const textContent = document.getElementById('textContent');
+                const html = textContent.innerHTML;
+                const newHtml = html.replace(new RegExp(`<span[^>]*>${entityValue}</span>`, 'g'), entityValue);
+                textContent.innerHTML = newHtml;
+            }
+            tag.remove();
+            updateEntityCount();
+        }
+        
+        function updateEntityCount() {
+            const count = document.querySelectorAll('.entity-tag').length;
+            document.getElementById('entityCount').textContent = count;
+            document.getElementById('entityResultCount').textContent = count;
+            document.getElementById('sidebarCount').textContent = count;
+            document.getElementById('progressBadge').textContent = `${count}/28`;
+        }
+        
+        // 文本选中标注功能
+        function initTextSelection() {
+            const textContainer = document.getElementById('textContent');
+            
+            textContainer.addEventListener('mouseup', () => {
+                const selection = window.getSelection();
+                const selectedText = selection.toString().trim();
+                
+                if (selectedText && selectedText.length > 0 && selectedText.length < 50) {
+                    // 检查选中的文本是否已经被标注过
+                    const range = selection.getRangeAt(0);
+                    let parent = range.commonAncestorContainer;
+                    if (parent.nodeType === Node.TEXT_NODE) {
+                        parent = parent.parentElement;
+                    }
+                    if (parent && parent.classList && parent.classList.contains('entity')) {
+                        selection.removeAllRanges();
+                        return;
+                    }
+                    
+                    // 获取选中文本的位置信息并包裹span
+                    const span = document.createElement('span');
+                    const typeClass = currentType;
+                    span.className = `entity entity-${typeClass}`;
+                    span.textContent = selectedText;
+                    span.setAttribute('onclick', 'removeEntity(this)');
+                    span.setAttribute('title', '点击取消标注');
+                    
+                    range.deleteContents();
+                    range.insertNode(span);
+                    
+                    // 添加到右侧列表
+                    const tagsContainer = document.getElementById('entityTags');
+                    const newTag = document.createElement('div');
+                    newTag.className = `entity-tag`;
+                    newTag.setAttribute('data-type', typeClass);
+                    newTag.innerHTML = `
+                        <span class="entity-tag-dot"></span>
+                        <span class="entity-tag-label">${typeNames[currentType]}</span>
+                        <span class="entity-tag-value">${selectedText}</span>
+                        <span class="delete-entity" onclick="deleteEntityTag(this)">✕</span>
+                    `;
+                    tagsContainer.appendChild(newTag);
+                    
+                    updateEntityCount();
+                    selection.removeAllRanges();
+                }
+            });
+        }
+        
+        function prevData() { alert('上一条'); }
+        function skipData() { alert('跳过'); }
+        function releaseTask() { alert('任务已释放'); }
+        function confirmAnnotation() { 
+            const count = document.querySelectorAll('.entity-tag').length;
+            alert(`已保存 ${count} 个实体标注`); 
+        }
+        function submitAll() { 
+            const count = document.querySelectorAll('.entity-tag').length;
+            alert(`已提交 ${count} 个实体标注`); 
+        }
+        
+        function toggleSubmenu(el, subId) {
+            event.stopPropagation();
+            const subList = document.getElementById(subId);
+            const navItem = el.closest('.nav-item');
+            if (subList.style.maxHeight && subList.style.maxHeight !== '0px') {
+                subList.style.maxHeight = '0';
+                navItem.classList.remove('open');
+            } else {
+                subList.style.maxHeight = subList.scrollHeight + 'px';
+                navItem.classList.add('open');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置默认激活类型
+            const defaultBtn = document.querySelector('.type-btn[data-type="person"]');
+            if (defaultBtn) defaultBtn.classList.add('active');
+            
+            initTextSelection();
+        });
+    </script>
+</body>
+</html>
