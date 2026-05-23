@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>目标检测标注台 - 广东省文化馆</title>
+    <style>
+        :root {
+            --primary: #1677ff;
+            --primary-hover: #4096ff;
+            --primary-light: #e6f4ff;
+            --success: #52c41a;
+            --success-light: #f6ffed;
+            --warning: #faad14;
+            --warning-light: #fff7e6;
+            --error: #ff4d4f;
+            --text: #262626;
+            --text-secondary: #595959;
+            --text-tertiary: #8c8c8c;
+            --border: #d9d9d9;
+            --border-light: #f0f0f0;
+            --bg: #fafafa;
+            --bg-white: #ffffff;
+            --radius: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Left Sidebar */
+        .sidebar { width: 200px; background: #1a1a2e; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; z-index: 10; }
+        .sidebar-logo { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 14px; color: #fff; font-weight: 600; }
+        .sidebar-logo span { font-size: 11px; color: var(--primary); display: block; margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; padding: 10px 16px; color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; transition: all 0.2s; gap: 8px; user-select: none; border-right: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.has-sub { justify-content: flex-start; }
+        .nav-item.has-sub.open { background: rgba(74,158,255,0.15); color: var(--primary); border-right-color: var(--primary); }
+        .nav-item .icon { width: 18px; text-align: center; font-size: 12px; color: #8c8c8c; flex-shrink: 0; }
+        .nav-item .text { flex: 1; }
+        .nav-item .arrow { font-size: 10px; color: rgba(255,255,255,0.4); transition: transform 0.2s; }
+        .nav-item.has-sub.open .arrow { transform: rotate(90deg); }
+        .nav-sub-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgba(0,0,0,0.15); }
+        .nav-sub-item { display: flex; align-items: center; padding: 8px 16px 8px 42px; color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; transition: all 0.2s; gap: 8px; }
+        .nav-sub-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-sub-item.active { color: var(--primary); }
+        .nav-sub-item .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+        .nav-sub-item.active .dot { background: var(--primary); }
+        .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; }
+        .user-name { font-size: 12px; color: rgba(255,255,255,0.8); }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+        /* Main area */
+        .main { margin-left: 200px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* Topbar */
+        .topbar {
+            height: 48px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-tertiary); }
+        .topbar-breadcrumb span { color: var(--text); }
+        .topbar-actions { display: flex; gap: 12px; }
+
+        /* Button */
+        .btn { height: 32px; padding: 0 14px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; font-weight: 500; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-default { background: var(--bg-white); border: 1px solid var(--border); color: var(--text); }
+        .btn-default:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Workbench */
+        .workbench {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 12px 24px;
+            background: #f0f2f5;
+            max-height: 1000px;
+            height: 1000px;
+        }
+
+        .wb-header {
+            background: var(--bg-white);
+            border-radius: var(--radius) var(--radius) 0 0;
+            border: 1px solid var(--border-light);
+            border-bottom: none;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wb-header-left .wb-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .wb-header-left .wb-meta { font-size: 12px; color: var(--text-tertiary); display: flex; gap: 16px; flex-wrap: wrap; }
+        .wb-header-right { display: flex; gap: 10px; align-items: center; }
+        .divider-1, .divider-2 { height: 1px; background: var(--border-light); }
+        .wb-nav {
+            background: var(--bg-white);
+            border-left: 1px solid var(--border-light);
+            border-right: 1px solid var(--border-light);
+            padding: 0 20px;
+            display: flex;
+            gap: 24px;
+        }
+        .wb-nav-item {
+            padding: 10px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+        .wb-nav-item:hover { color: var(--text); }
+        .wb-nav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .wb-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            min-height: 0;
+        }
+        .wb-sidebar {
+            width: 320px;
+            border-left: 1px solid var(--border-light);
+            overflow-y: auto;
+            background: var(--bg-white);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .wb-sidebar-section {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .wb-sidebar-section:last-child { border-bottom: none; }
+        .wb-sidebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .wb-sidebar-title .count-badge {
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .wb-sidebar-item { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12px; }
+        .wb-sidebar-item .label { color: var(--text-tertiary); }
+        .wb-sidebar-item .value { color: var(--text); font-weight: 500; }
+        .wb-sidebar-item .value.green { color: var(--success); }
+        .wb-sidebar-item .value.yellow { color: var(--warning); }
+        .progress-bar { height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #69c0ff); border-radius: 3px; }
+        .progress-text { font-size: 11px; color: var(--text-tertiary); margin-top: 6px; text-align: center; }
+        .wb-footer {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+        .wb-footer-btns { display: flex; gap: 10px; }
+        .wb-page-info { font-size: 12px; color: var(--text-tertiary); }
+
+        /* ========== 目标检测样式 ========== */
+        .detection-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .detection-main {
+            padding: 10px 20px 6px 20px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .detection-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        
+        /* 画布区域 */
+        .canvas-wrapper {
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            position: relative;
+            min-height: 360px;
+            overflow: auto;
+            cursor: crosshair;
+        }
+        .image-canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #f5f5f5;
+        }
+        
+        /* 标注工具栏 */
+        .annotation-toolbar {
+            padding: 12px 20px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .tool-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tool-group-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .tool-btn {
+            padding: 5px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-white);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tool-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+        .tool-btn.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 500; }
+        
+        /* 标签工具栏 */
+        .label-toolbar {
+            padding: 10px 20px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: var(--bg-white);
+            flex-shrink: 0;
+        }
+        .label-toolbar-label { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
+        .tag-btn {
+            padding: 5px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-white);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tag-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+        .tag-btn.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 500; box-shadow: var(--shadow-sm); }
+        .tag-btn-green.active { background: var(--success-light); border-color: var(--success); color: var(--success); }
+        .tag-btn-purple.active { background: rgba(114,46,209,0.12); border-color: #722ed1; color: #722ed1; }
+        .tag-btn-orange.active { background: var(--warning-light); border-color: var(--warning); color: var(--warning); }
+        .tag-btn-red.active { background: rgba(255,77,79,0.12); border-color: var(--error); color: var(--error); }
+        
+        .current-info {
+            margin-left: auto;
+            font-size: 10px;
+            color: var(--text-tertiary);
+            background: var(--bg);
+            padding: 4px 12px;
+            border-radius: 16px;
+        }
+
+        /* 检测框样式 */
+        .bbox {
+            position: absolute;
+            border: 2px solid;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .bbox:hover { opacity: 0.8; transform: scale(1.01); }
+        .bbox.selected { border-width: 3px; box-shadow: 0 0 0 2px rgba(22,119,255,0.2); }
+        .bbox-label {
+            position: absolute;
+            top: -22px;
+            left: -1px;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 500;
+            color: #fff;
+            border-radius: 4px 4px 0 0;
+            white-space: nowrap;
+        }
+        .bbox-person { border-color: #1677ff; }
+        .bbox-person .bbox-label { background: #1677ff; }
+        .bbox-vehicle { border-color: #faad14; }
+        .bbox-vehicle .bbox-label { background: #faad14; }
+        .bbox-object { border-color: #52c41a; }
+        .bbox-object .bbox-label { background: #52c41a; }
+        .bbox-animal { border-color: #722ed1; }
+        .bbox-animal .bbox-label { background: #722ed1; }
+        .bbox-text { border-color: #ff4d4f; }
+        .bbox-text .bbox-label { background: #ff4d4f; }
+
+        /* 右侧列表样式 */
+        .bbox-list { display: flex; flex-direction: column; gap: 12px; }
+        .bbox-item {
+            padding: 12px 14px;
+            background: #f9fafb;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .bbox-item:hover { border-color: var(--primary); background: var(--bg-white); box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+        .bbox-item.active { border-color: var(--primary); background: var(--primary-light); }
+        .bbox-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .bbox-label-text { font-size: 12px; font-weight: 600; }
+        .bbox-label-text.blue { color: #1677ff; }
+        .bbox-label-text.orange { color: #faad14; }
+        .bbox-label-text.green { color: #52c41a; }
+        .bbox-label-text.purple { color: #722ed1; }
+        .bbox-label-text.red { color: #ff4d4f; }
+        .bbox-coord { font-size: 10px; color: var(--text-tertiary); background: rgba(0,0,0,0.04); padding: 2px 6px; border-radius: 10px; }
+        .delete-bbox {
+            color: var(--text-tertiary);
+            cursor: pointer;
+            font-size: 13px;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        .delete-bbox:hover { color: var(--error); background: rgba(255,77,79,0.1); }
+        .bbox-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .bbox-tag { padding: 2px 10px; border-radius: 14px; font-size: 10px; font-weight: 500; }
+        .bbox-tag-blue { background: rgba(22,119,255,0.12); color: #1677ff; }
+        .bbox-tag-orange { background: rgba(250,173,20,0.12); color: #faad14; }
+        .bbox-tag-green { background: rgba(82,196,26,0.12); color: #52c41a; }
+        .bbox-tag-purple { background: rgba(114,46,209,0.12); color: #722ed1; }
+        .bbox-tag-red { background: rgba(255,77,79,0.12); color: #ff4d4f; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>数据集管理平台</h1>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+    </div>
+</div>
+<div class="main">
+        <div class="topbar">
+            <div class="topbar-breadcrumb">
+                <span>广东省文化馆</span><span>›</span><span>数字资源标注</span><span>›</span>
+                <span>目标检测</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-default" onclick="history.back()">返回列表</button>
+                <button class="btn btn-primary" onclick="submitAll()">提交全部</button>
+            </div>
+        </div>
+
+        <div class="workbench">
+            <div class="wb-header">
+                <div class="wb-header-left">
+                    <div class="wb-title">图像目标检测标注</div>
+                    <div class="wb-meta">
+                        <span>资源ID：GDSG-IMG-2024-015</span>
+                        <span>图片尺寸：800×500</span>
+                        <span>已标注：<span id="bboxCount">5</span>/20</span>
+                    </div>
+                </div>
+                <div class="wb-header-right">
+                    <div style="font-size:12px;color:var(--text-secondary);">标注员：李华</div>
+                </div>
+            </div>
+            <div class="divider-1"></div>
+            <div class="wb-nav">
+                <div class="wb-nav-item active">待标注 (15)</div>
+                <div class="wb-nav-item">已标注 (5)</div>
+                <div class="wb-nav-item">全部图片 (20)</div>
+            </div>
+            <div class="divider-2"></div>
+
+            <div class="wb-body">
+                <div class="detection-area">
+                    <div class="detection-main">
+                        <div class="detection-title">标注画布（鼠标拖拽绘制检测框）</div>
+                        <div class="canvas-wrapper" id="canvasWrapper">
+                            <div style="position: relative; display: inline-block; width: 100%;">
+                                <canvas id="imageCanvas" class="image-canvas" width="800" height="500" style="width: 100%; height: auto; cursor: crosshair;"></canvas>
+                                <div id="bboxContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 标注工具栏 -->
+                    <div class="annotation-toolbar">
+                        <div class="tool-group">
+                            <span class="tool-group-label">绘制模式：</span>
+                            <button class="tool-btn active" id="rectModeBtn" onclick="setDrawMode('rect')">矩形框</button>
+                            <button class="tool-btn" id="selectModeBtn" onclick="setDrawMode('select')">选择模式</button>
+                        </div>
+                        <div class="tool-group">
+                            <span class="tool-group-label" id="drawHint" style="color: var(--primary);">鼠标拖拽绘制矩形框</span>
+                        </div>
+                        <span class="current-info" id="currentInfo">点击标签完成标注</span>
+                    </div>
+
+                    <!-- 标签工具栏 -->
+                    <div class="label-toolbar">
+                        <span class="label-toolbar-label">标签：</span>
+                        <button class="tag-btn tag-btn-blue" onclick="setActiveTag(this, 'person', '人物')">人物</button>
+                        <button class="tag-btn tag-btn-orange" onclick="setActiveTag(this, 'vehicle', '车辆')">车辆</button>
+                        <button class="tag-btn tag-btn-green" onclick="setActiveTag(this, 'object', '物体')">物体</button>
+                        <button class="tag-btn tag-btn-purple" onclick="setActiveTag(this, 'animal', '动物')">动物</button>
+                        <button class="tag-btn tag-btn-red" onclick="setActiveTag(this, 'text', '文字')">文字</button>
+                        <span class="current-info" id="tagInfo">当前标签：人物</span>
+                    </div>
+                </div>
+
+                <div class="wb-sidebar">
+                    <div class="wb-sidebar-section">
+                        <div class="wb-sidebar-title">已标注目标 <span class="count-badge" id="bboxBadge">5</span></div>
+                        <div class="bbox-list" id="bboxList"></div>
+                    </div>
+                    <div class="wb-sidebar-section">
+                        <div class="wb-sidebar-title">标注进度</div>
+                        <div class="wb-sidebar-item"><span class="label">总目标数</span><span class="value">20</span></div>
+                        <div class="wb-sidebar-item"><span class="label">已标注</span><span class="value green" id="sidebarCount">5</span></div>
+                        <div class="wb-sidebar-item"><span class="label">待标注</span><span class="value yellow">15</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 25%;"></div></div>
+                        <div class="progress-text">整体进度 25%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wb-footer">
+                <div class="wb-footer-btns">
+                    <button class="btn btn-default" onclick="prevImage()">← 上一张</button>
+                    <button class="btn btn-primary" onclick="confirmAnnotation()">确认标注 →</button>
+                    <button class="btn btn-default" onclick="skipImage()">跳过</button>
+                    <button class="btn btn-default" onclick="releaseTask()">释放任务</button>
+                </div>
+                <div class="wb-page-info">第 1/15 条 · 待标注</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 画布元素
+        let canvas, ctx;
+        let imageObj = new Image();
+        
+        // 标注框数据
+        let bboxes = [];
+        let nextId = 6;
+        let currentDrawMode = 'rect';
+        let isDrawing = false;
+        let startX, startY;
+        let activeTag = { id: 'person', name: '人物', color: 'blue' };
+        let selectedBboxId = null;
+        
+        // 模拟已有标注框
+        bboxes = [
+            { id: 1, x: 120, y: 80, width: 85, height: 180, label: 'person', labelName: '人物', color: 'blue' },
+            { id: 2, x: 280, y: 100, width: 75, height: 160, label: 'person', labelName: '人物', color: 'blue' },
+            { id: 3, x: 450, y: 150, width: 130, height: 90, label: 'vehicle', labelName: '车辆', color: 'orange' },
+            { id: 4, x: 620, y: 90, width: 60, height: 60, label: 'object', labelName: '物体', color: 'green' },
+            { id: 5, x: 740, y: 200, width: 55, height: 140, label: 'person', labelName: '人物', color: 'blue' }
+        ];
+        
+        // 创建占位图片（简洁的网格背景）
+        function createPlaceholderImage() {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 800;
+            tempCanvas.height = 500;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // 浅色背景
+            tempCtx.fillStyle = '#f0f2f5';
+            tempCtx.fillRect(0, 0, 800, 500);
+            
+            // 绘制网格线
+            tempCtx.strokeStyle = '#d9d9d9';
+            tempCtx.lineWidth = 0.5;
+            for (let i = 0; i < 800; i += 50) {
+                tempCtx.beginPath();
+                tempCtx.moveTo(i, 0);
+                tempCtx.lineTo(i, 500);
+                tempCtx.stroke();
+                tempCtx.beginPath();
+                tempCtx.moveTo(0, i);
+                tempCtx.lineTo(800, i);
+                tempCtx.stroke();
+            }
+            
+            // 中心区域浅色方块
+            tempCtx.fillStyle = '#e6e9f0';
+            tempCtx.fillRect(100, 100, 600, 300);
+            
+            // 边框
+            tempCtx.strokeStyle = '#c0c4cc';
+            tempCtx.lineWidth = 2;
+            tempCtx.strokeRect(100, 100, 600, 300);
+            
+            // 十字辅助线
+            tempCtx.beginPath();
+            tempCtx.moveTo(400, 100);
+            tempCtx.lineTo(400, 400);
+            tempCtx.moveTo(100, 250);
+            tempCtx.lineTo(700, 250);
+            tempCtx.stroke();
+            
+            // 文字提示
+            tempCtx.fillStyle = '#8c8c8c';
+            tempCtx.font = '14px "PingFang SC", sans-serif';
+            tempCtx.fillText('拖拽鼠标绘制检测框', 330, 245);
+            tempCtx.font = '12px "PingFang SC", sans-serif';
+            tempCtx.fillText('选择标签后完成标注', 340, 275);
+            
+            return tempCanvas.toDataURL();
+        }
+        
+        // 绘制图片和标注框
+        function drawImageAndBoxes() {
+            if (!ctx) return;
+            
+            const displayWidth = canvas.clientWidth;
+            const displayHeight = (displayWidth * imageObj.height) / imageObj.width;
+            canvas.width = displayWidth;
+            canvas.height = displayHeight;
+            
+            ctx.drawImage(imageObj, 0, 0, canvas.width, canvas.height);
+            
+            const scaleX = canvas.width / imageObj.width;
+            const scaleY = canvas.height / imageObj.height;
+            
+            for (const box of bboxes) {
+                const x = box.x * scaleX;
+                const y = box.y * scaleY;
+                const w = box.width * scaleX;
+                const h = box.height * scaleY;
+                
+                ctx.strokeStyle = getColorByLabel(box.label);
+                ctx.lineWidth = box.id === selectedBboxId ? 3 : 2;
+                ctx.strokeRect(x, y, w, h);
+                
+                ctx.fillStyle = getColorByLabel(box.label);
+                ctx.fillRect(x, y - 18, ctx.measureText(box.labelName).width + 12, 18);
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px sans-serif';
+                ctx.fillText(box.labelName, x + 4, y - 6);
+            }
+            
+            updateBboxContainer(scaleX, scaleY);
+        }
+        
+        function getColorByLabel(label) {
+            const colors = { person: '#1677ff', vehicle: '#faad14', object: '#52c41a', animal: '#722ed1', text: '#ff4d4f' };
+            return colors[label] || '#1677ff';
+        }
+        
+        function getColorClass(label) {
+            const classes = { person: 'blue', vehicle: 'orange', object: 'green', animal: 'purple', text: 'red' };
+            return classes[label] || 'blue';
+        }
+        
+        function updateBboxContainer(scaleX, scaleY) {
+            const container = document.getElementById('bboxContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            const wrapperRect = document.querySelector('.canvas-wrapper').getBoundingClientRect();
+            const canvasRectElem = canvas.getBoundingClientRect();
+            const offsetLeft = canvasRectElem.left - wrapperRect.left;
+            const offsetTop = canvasRectElem.top - wrapperRect.top;
+            
+            for (const box of bboxes) {
+                const x = box.x * scaleX + offsetLeft;
+                const y = box.y * scaleY + offsetTop;
+                const w = box.width * scaleX;
+                const h = box.height * scaleY;
+                
+                const div = document.createElement('div');
+                div.className = `bbox bbox-${box.label}`;
+                if (box.id === selectedBboxId) div.classList.add('selected');
+                div.style.left = x + 'px';
+                div.style.top = y + 'px';
+                div.style.width = w + 'px';
+                div.style.height = h + 'px';
+                div.setAttribute('data-id', box.id);
+                div.onclick = (e) => {
+                    e.stopPropagation();
+                    selectBbox(box.id);
+                };
+                
+                const labelSpan = document.createElement('div');
+                labelSpan.className = 'bbox-label';
+                labelSpan.textContent = box.labelName;
+                div.appendChild(labelSpan);
+                container.appendChild(div);
+            }
+        }
+        
+        function selectBbox(id) {
+            selectedBboxId = id;
+            const scaleX = canvas.width / imageObj.width;
+            const scaleY = canvas.height / imageObj.height;
+            drawImageAndBoxes();
+            renderBboxList();
+            document.getElementById('currentInfo').innerHTML = `已选中: ${bboxes.find(b => b.id === id)?.labelName}`;
+        }
+        
+        function renderBboxList() {
+            const container = document.getElementById('bboxList');
+            if (!container) return;
+            
+            if (bboxes.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-tertiary);font-size:12px;padding:20px;text-align:center;">暂无标注目标<br><span style="font-size:11px;">鼠标拖拽绘制矩形框添加</span></div>';
+                return;
+            }
+            
+            container.innerHTML = bboxes.map(box => `
+                <div class="bbox-item ${box.id === selectedBboxId ? 'active' : ''}" onclick="selectBbox(${box.id})">
+                    <div class="bbox-item-header">
+                        <span class="bbox-label-text ${getColorClass(box.label)}">${box.labelName}</span>
+                        <span style="display:flex; gap:6px;">
+                            <span class="bbox-coord">${Math.round(box.x)},${Math.round(box.y)} → ${Math.round(box.x+box.width)},${Math.round(box.y+box.height)}</span>
+                            <span class="delete-bbox" onclick="event.stopPropagation(); deleteBbox(${box.id})">✕</span>
+                        </span>
+                    </div>
+                    <div class="bbox-tags">
+                        <span class="bbox-tag bbox-tag-${getColorClass(box.label)}">${box.labelName}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('bboxCount').textContent = bboxes.length;
+            document.getElementById('sidebarCount').textContent = bboxes.length;
+            document.getElementById('bboxBadge').textContent = bboxes.length;
+        }
+        
+        function deleteBbox(id) {
+            bboxes = bboxes.filter(b => b.id !== id);
+            if (selectedBboxId === id) selectedBboxId = null;
+            drawImageAndBoxes();
+            renderBboxList();
+            document.getElementById('currentInfo').innerHTML = '已删除标注框';
+        }
+        
+        function setDrawMode(mode) {
+            currentDrawMode = mode;
+            document.getElementById('rectModeBtn').classList.toggle('active', mode === 'rect');
+            document.getElementById('selectModeBtn').classList.toggle('active', mode === 'select');
+            const hint = mode === 'rect' ? '鼠标拖拽绘制矩形框' : '点击选择标注框';
+            document.getElementById('drawHint').innerHTML = hint;
+            document.getElementById('canvasWrapper').style.cursor = mode === 'rect' ? 'crosshair' : 'default';
+        }
+        
+        function setActiveTag(btn, labelId, labelName) {
+            document.querySelectorAll('.label-toolbar .tag-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeTag = { id: labelId, name: labelName, color: getColorClass(labelId) };
+            document.getElementById('tagInfo').innerHTML = `当前标签：${labelName}`;
+        }
+        
+        function initCanvasDrawing() {
+            canvas.addEventListener('mousedown', (e) => {
+                if (currentDrawMode !== 'rect') return;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mouseX = (e.clientX - rect.left) * scaleX;
+                const mouseY = (e.clientY - rect.top) * scaleY;
+                startX = Math.max(0, Math.min(canvas.width, mouseX));
+                startY = Math.max(0, Math.min(canvas.height, mouseY));
+                isDrawing = true;
+            });
+            
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isDrawing || currentDrawMode !== 'rect') return;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let currentX = (e.clientX - rect.left) * scaleX;
+                let currentY = (e.clientY - rect.top) * scaleY;
+                currentX = Math.max(0, Math.min(canvas.width, currentX));
+                currentY = Math.max(0, Math.min(canvas.height, currentY));
+                
+                const x = Math.min(startX, currentX);
+                const y = Math.min(startY, currentY);
+                const w = Math.abs(currentX - startX);
+                const h = Math.abs(currentY - startY);
+                
+                drawImageAndBoxes();
+                ctx.strokeStyle = '#1677ff';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(x, y, w, h);
+                ctx.setLineDash([]);
+            });
+            
+            canvas.addEventListener('mouseup', (e) => {
+                if (!isDrawing || currentDrawMode !== 'rect') {
+                    isDrawing = false;
+                    return;
+                }
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let endX = (e.clientX - rect.left) * scaleX;
+                let endY = (e.clientY - rect.top) * scaleY;
+                endX = Math.max(0, Math.min(canvas.width, endX));
+                endY = Math.max(0, Math.min(canvas.height, endY));
+                
+                const x = Math.min(startX, endX);
+                const y = Math.min(startY, endY);
+                const w = Math.abs(endX - startX);
+                const h = Math.abs(endY - startY);
+                
+                if (w > 10 && h > 10) {
+                    const origX = x / (canvas.width / imageObj.width);
+                    const origY = y / (canvas.height / imageObj.height);
+                    const origW = w / (canvas.width / imageObj.width);
+                    const origH = h / (canvas.height / imageObj.height);
+                    
+                    const newBbox = {
+                        id: nextId++,
+                        x: origX,
+                        y: origY,
+                        width: origW,
+                        height: origH,
+                        label: activeTag.id,
+                        labelName: activeTag.name,
+                        color: activeTag.color
+                    };
+                    bboxes.push(newBbox);
+                    renderBboxList();
+                    drawImageAndBoxes();
+                    document.getElementById('currentInfo').innerHTML = `已添加 ${activeTag.name} 标注框`;
+                }
+                isDrawing = false;
+            });
+        }
+        
+        function loadPlaceholderImage() {
+            imageObj.onload = () => {
+                const wrapper = document.querySelector('.canvas-wrapper');
+                const displayWidth = wrapper.clientWidth - 4;
+                canvas.width = displayWidth;
+                canvas.height = (displayWidth * imageObj.height) / imageObj.width;
+                ctx = canvas.getContext('2d');
+                drawImageAndBoxes();
+                renderBboxList();
+            };
+            imageObj.src = createPlaceholderImage();
+        }
+        
+        function prevImage() { alert('上一张图片'); }
+        function skipImage() { alert('跳过'); }
+        function releaseTask() { alert('任务已释放'); }
+        function confirmAnnotation() { alert(`已保存 ${bboxes.length} 个标注目标`); }
+        function submitAll() { alert(`已提交 ${bboxes.length} 个标注目标`); }
+        
+        function toggleSubmenu(el, subId) {
+            event.stopPropagation();
+            const subList = document.getElementById(subId);
+            const navItem = el.closest('.nav-item');
+            if (subList.style.maxHeight && subList.style.maxHeight !== '0px') {
+                subList.style.maxHeight = '0';
+                navItem.classList.remove('open');
+            } else {
+                subList.style.maxHeight = subList.scrollHeight + 'px';
+                navItem.classList.add('open');
+            }
+        }
+        
+        window.addEventListener('resize', () => {
+            if (imageObj.complete && imageObj.src) {
+                const wrapper = document.querySelector('.canvas-wrapper');
+                const displayWidth = wrapper.clientWidth - 4;
+                canvas.width = displayWidth;
+                canvas.height = (displayWidth * imageObj.height) / imageObj.width;
+                drawImageAndBoxes();
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            canvas = document.getElementById('imageCanvas');
+            loadPlaceholderImage();
+            initCanvasDrawing();
+            document.querySelector('.tag-btn-blue').classList.add('active');
+        });
+    </script>
+</body>
+</html>

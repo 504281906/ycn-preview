@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频分类标注台 - 广东省文化馆</title>
+    <style>
+        :root {
+            --primary: #1677ff;
+            --primary-hover: #4096ff;
+            --primary-light: #e6f4ff;
+            --success: #52c41a;
+            --success-light: #f6ffed;
+            --warning: #faad14;
+            --warning-light: #fff7e6;
+            --error: #ff4d4f;
+            --text: #262626;
+            --text-secondary: #595959;
+            --text-tertiary: #8c8c8c;
+            --border: #d9d9d9;
+            --border-light: #f0f0f0;
+            --bg: #fafafa;
+            --bg-white: #ffffff;
+            --radius: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Left Sidebar */
+        .sidebar { width: 200px; background: #1a1a2e; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; z-index: 10; }
+        .sidebar-logo { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 14px; color: #fff; font-weight: 600; }
+        .sidebar-logo span { font-size: 11px; color: var(--primary); display: block; margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; padding: 10px 16px; color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; transition: all 0.2s; gap: 8px; user-select: none; border-right: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.has-sub { justify-content: flex-start; }
+        .nav-item.has-sub.open { background: rgba(74,158,255,0.15); color: var(--primary); border-right-color: var(--primary); }
+        .nav-item .icon { width: 18px; text-align: center; font-size: 12px; color: #8c8c8c; flex-shrink: 0; }
+        .nav-item .text { flex: 1; }
+        .nav-item .arrow { font-size: 10px; color: rgba(255,255,255,0.4); transition: transform 0.2s; }
+        .nav-item.has-sub.open .arrow { transform: rotate(90deg); }
+        .nav-sub-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgba(0,0,0,0.15); }
+        .nav-sub-item { display: flex; align-items: center; padding: 8px 16px 8px 42px; color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; transition: all 0.2s; gap: 8px; }
+        .nav-sub-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-sub-item.active { color: var(--primary); }
+        .nav-sub-item .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+        .nav-sub-item.active .dot { background: var(--primary); }
+        .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; }
+        .user-name { font-size: 12px; color: rgba(255,255,255,0.8); }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+        /* Main area */
+        .main { margin-left: 200px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* Topbar */
+        .topbar {
+            height: 48px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-tertiary); }
+        .topbar-breadcrumb span { color: var(--text); }
+        .topbar-actions { display: flex; gap: 12px; }
+
+        /* Button */
+        .btn { height: 32px; padding: 0 14px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; font-weight: 500; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-default { background: var(--bg-white); border: 1px solid var(--border); color: var(--text); }
+        .btn-default:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Workbench */
+        .workbench {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 12px 24px;
+            background: #f0f2f5;
+            max-height: 1000px;
+            height: 1000px;
+        }
+
+        .wb-header {
+            background: var(--bg-white);
+            border-radius: var(--radius) var(--radius) 0 0;
+            border: 1px solid var(--border-light);
+            border-bottom: none;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wb-header-left .wb-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .wb-header-left .wb-meta { font-size: 12px; color: var(--text-tertiary); display: flex; gap: 16px; flex-wrap: wrap; }
+        .wb-header-right { display: flex; gap: 10px; align-items: center; }
+        .divider-1, .divider-2 { height: 1px; background: var(--border-light); }
+        .wb-nav {
+            background: var(--bg-white);
+            border-left: 1px solid var(--border-light);
+            border-right: 1px solid var(--border-light);
+            padding: 0 20px;
+            display: flex;
+            gap: 24px;
+        }
+        .wb-nav-item {
+            padding: 10px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+        .wb-nav-item:hover { color: var(--text); }
+        .wb-nav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .wb-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            min-height: 0;
+        }
+
+        /* 中间内容区 */
+        .classification-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 视频播放器区域 */
+        .video-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-white);
+        }
+        .video-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .video-player-wrapper {
+            background: #000;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            position: relative;
+            height: 240px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .video-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: rgba(255,255,255,0.6);
+            flex-direction: column;
+            gap: 12px;
+        }
+        .video-placeholder .play-icon { font-size: 48px; opacity: 0.8; }
+        .video-placeholder .video-hint { font-size: 12px; }
+
+        /* 时间轴 */
+        .video-timeline {
+            margin-top: 12px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+        }
+        .timeline-scrubber {
+            position: relative;
+            height: 32px;
+            cursor: pointer;
+        }
+        .timeline-track {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+        }
+        .timeline-progress {
+            position: absolute;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 2px;
+            width: 0%;
+        }
+        .timeline-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 10px;
+            color: var(--text-tertiary);
+            padding: 0 4px;
+        }
+
+        /* 播放控制栏 */
+        .playback-section {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: var(--bg-white);
+        }
+        .play-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .play-btn:hover { background: var(--primary-hover); transform: scale(1.02); }
+        .play-btn.playing { background: var(--warning); }
+        .playback-info { display: flex; flex-direction: column; gap: 2px; }
+        .playback-time { font-size: 13px; color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
+        .playback-duration { font-size: 11px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+        
+        .speed-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            background: var(--bg);
+            padding: 4px 10px;
+            border-radius: 24px;
+            margin-left: auto;
+        }
+        .speed-group span { font-size: 11px; color: var(--text-tertiary); }
+        .speed-btn {
+            padding: 3px 10px;
+            border: none;
+            border-radius: 16px;
+            background: transparent;
+            font-size: 11px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .speed-btn:hover { background: var(--border-light); color: var(--text); }
+        .speed-btn.active { background: var(--primary-light); color: var(--primary); font-weight: 500; }
+
+        /* 标签选择区域 */
+        .tags-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-white);
+        }
+        .tags-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .tags-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .class-tag {
+            padding: 8px 20px;
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            background: var(--bg-white);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .class-tag:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+        .class-tag.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 500; box-shadow: var(--shadow-sm); }
+
+        /* 已选标签展示 */
+        .selected-tags-section {
+            padding: 16px 20px;
+            background: var(--bg-white);
+        }
+        .selected-tags-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .selected-tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .selected-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px 6px 16px;
+            border-radius: 32px;
+            font-size: 12px;
+            background: #f0f5ff;
+            border: 1px solid var(--primary-light);
+            transition: all 0.2s;
+        }
+        .selected-tag .tag-name { color: var(--primary); font-weight: 500; }
+        .remove-tag {
+            color: var(--text-tertiary);
+            cursor: pointer;
+            font-size: 14px;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .remove-tag:hover { color: var(--error); background: rgba(255,77,79,0.1); }
+        .count-badge {
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        /* 右侧边栏 */
+        .wb-sidebar {
+            width: 280px;
+            border-left: 1px solid var(--border-light);
+            overflow-y: auto;
+            background: var(--bg-white);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .wb-sidebar-section {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .wb-sidebar-section:last-child { border-bottom: none; }
+        .wb-sidebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .wb-sidebar-item { display: flex; justify-content: space-between; padding: 8px 0; font-size: 12px; }
+        .wb-sidebar-item .label { color: var(--text-tertiary); }
+        .wb-sidebar-item .value { color: var(--text); font-weight: 500; }
+        .wb-sidebar-item .value.green { color: var(--success); }
+        .wb-sidebar-item .value.yellow { color: var(--warning); }
+        .progress-bar { height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #69c0ff); border-radius: 3px; }
+        .progress-text { font-size: 11px; color: var(--text-tertiary); margin-top: 6px; text-align: center; }
+
+        /* Footer */
+        .wb-footer {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+        .wb-footer-btns { display: flex; gap: 10px; }
+        .wb-page-info { font-size: 12px; color: var(--text-tertiary); }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>数据集管理平台</h1>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+    </div>
+</div>
+<div class="main">
+        <div class="topbar">
+            <div class="topbar-breadcrumb">
+                <span>广东省文化馆</span><span>›</span><span>数字资源标注</span><span>›</span>
+                <span>视频分类</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-default" onclick="history.back()">返回列表</button>
+                <button class="btn btn-primary" onclick="submitAll()">提交全部</button>
+            </div>
+        </div>
+
+        <div class="workbench">
+            <div class="wb-header">
+                <div class="wb-header-left">
+                    <div class="wb-title">视频分类标注 · 非遗活动视频数据集</div>
+                    <div class="wb-meta">
+                        <span>任务ID：GDSG-VIDEO-CLASS-001</span>
+                        <span>分辨率：1920×1080</span>
+                        <span>已分类：<span id="classifiedCount">2</span>/15</span>
+                    </div>
+                </div>
+                <div class="wb-header-right">
+                    <div style="font-size:12px;color:var(--text-secondary);">标注员：李华</div>
+                </div>
+            </div>
+            <div class="divider-1"></div>
+            <div class="wb-nav">
+                <div class="wb-nav-item active">待分类 (13)</div>
+                <div class="wb-nav-item">已分类 (2)</div>
+                <div class="wb-nav-item">全部视频 (15)</div>
+            </div>
+            <div class="divider-2"></div>
+
+            <div class="wb-body">
+                <!-- 中间内容区 -->
+                <div class="classification-main">
+                    <!-- 视频播放器区域 -->
+                    <div class="video-section">
+                        <div class="video-title">视频预览</div>
+                        <div class="video-player-wrapper" id="videoPlayer" onclick="seekToTimeFromClick(event)">
+                            <div class="video-placeholder">
+                                <div class="play-icon">▶</div>
+                                <div class="video-hint">广府庙会 · 非遗展演记录</div>
+                                <div class="video-hint" style="font-size:10px;">点击视频跳转到该时间点</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 时间轴 -->
+                        <div class="video-timeline">
+                            <div class="timeline-scrubber" id="timelineScrubber" onclick="seekToTime(event)">
+                                <div class="timeline-track">
+                                    <div class="timeline-progress" id="timelineProgress"></div>
+                                    <div class="timeline-thumb" id="timelineThumb"></div>
+                                </div>
+                            </div>
+                            <div class="timeline-labels">
+                                <span>0:00</span><span>1:00</span><span>2:00</span><span>3:00</span><span>4:00</span><span>5:00</span><span>6:00</span><span>7:00</span><span>8:00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 播放控制栏（无帧导航） -->
+                    <div class="playback-section">
+                        <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+                        <div class="playback-info">
+                            <div class="playback-time" id="currentTime">00:00</div>
+                            <div class="playback-duration">08:00</div>
+                        </div>
+                        <div class="speed-group">
+                            <span>倍速</span>
+                            <button class="speed-btn" onclick="setSpeed(0.5)">0.5x</button>
+                            <button class="speed-btn active" onclick="setSpeed(1.0)">1.0x</button>
+                            <button class="speed-btn" onclick="setSpeed(1.5)">1.5x</button>
+                            <button class="speed-btn" onclick="setSpeed(2.0)">2.0x</button>
+                        </div>
+                    </div>
+
+                    <!-- 标签选择区域 -->
+                    <div class="tags-section">
+                        <div class="tags-title">选择视频类别（可多选）</div>
+                        <div class="tags-grid" id="tagsGrid">
+                            <button class="class-tag" data-tag="粤剧表演" onclick="toggleTag(this)">粤剧表演</button>
+                            <button class="class-tag" data-tag="醒狮助兴" onclick="toggleTag(this)">醒狮助兴</button>
+                            <button class="class-tag" data-tag="非遗展示" onclick="toggleTag(this)">非遗展示</button>
+                            <button class="class-tag" data-tag="传统舞蹈" onclick="toggleTag(this)">传统舞蹈</button>
+                            <button class="class-tag" data-tag="民俗活动" onclick="toggleTag(this)">民俗活动</button>
+                            <button class="class-tag" data-tag="节庆庙会" onclick="toggleTag(this)">节庆庙会</button>
+                            <button class="class-tag" data-tag="传统武术" onclick="toggleTag(this)">传统武术</button>
+                            <button class="class-tag" data-tag="非遗传承" onclick="toggleTag(this)">非遗传承</button>
+                        </div>
+                    </div>
+
+                    <!-- 已选标签展示 -->
+                    <div class="selected-tags-section">
+                        <div class="selected-tags-title">
+                            已选标签
+                            <span class="count-badge" id="selectedCountBadge">2</span>
+                        </div>
+                        <div class="selected-tags-list" id="selectedTagsList">
+                            <div class="selected-tag">
+                                <span class="tag-name">粤剧表演</span>
+                                <span class="remove-tag" onclick="removeSelectedTag(this)">✕</span>
+                            </div>
+                            <div class="selected-tag">
+                                <span class="tag-name">非遗展示</span>
+                                <span class="remove-tag" onclick="removeSelectedTag(this)">✕</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧边栏：仅标注进度 -->
+                <div class="wb-sidebar">
+                    <div class="wb-sidebar-section">
+                        <div class="wb-sidebar-title">
+                            标注进度
+                            <span class="count-badge" id="progressBadge">2/15</span>
+                        </div>
+                        <div class="wb-sidebar-item"><span class="label">总视频数</span><span class="value">15</span></div>
+                        <div class="wb-sidebar-item"><span class="label">已标注</span><span class="value green" id="sidebarCount">2</span></div>
+                        <div class="wb-sidebar-item"><span class="label">待标注</span><span class="value yellow">13</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 13%;"></div></div>
+                        <div class="progress-text">整体进度 13%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wb-footer">
+                <div class="wb-footer-btns">
+                    <button class="btn btn-default" onclick="prevVideo()">← 上一个</button>
+                    <button class="btn btn-primary" onclick="confirmClassification()">确认分类 →</button>
+                    <button class="btn btn-default" onclick="skipVideo()">跳过</button>
+                    <button class="btn btn-default" onclick="releaseTask()">释放任务</button>
+                </div>
+                <div class="wb-page-info">第 1/13 条 · 待分类</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 当前选中的标签
+        let selectedTags = ['粤剧表演', '非遗展示'];
+        
+        // 播放控制
+        let isPlaying = false;
+        let currentSpeed = 1.0;
+        let currentSeconds = 0;
+        const totalSeconds = 480; // 8:00
+        let animationId = null;
+        
+        // 更新时间轴UI
+        function updateTimelineUI() {
+            const percent = (currentSeconds / totalSeconds) * 100;
+            document.getElementById('timelineProgress').style.width = `${percent}%`;
+            document.getElementById('timelineThumb').style.left = `${percent}%`;
+            const mins = Math.floor(currentSeconds / 60);
+            const secs = Math.floor(currentSeconds % 60);
+            document.getElementById('currentTime').textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // 视频点击跳转
+        function seekToTimeFromClick(event) {
+            const wrapper = document.getElementById('videoPlayer');
+            const rect = wrapper.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            currentSeconds = Math.max(0, Math.min(totalSeconds, percent * totalSeconds));
+            updateTimelineUI();
+        }
+        
+        function seekToTime(event) {
+            const scrubber = document.getElementById('timelineScrubber');
+            const rect = scrubber.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            currentSeconds = Math.max(0, Math.min(totalSeconds, percent * totalSeconds));
+            updateTimelineUI();
+        }
+        
+        // 切换标签选中状态
+        function toggleTag(btn) {
+            const tagName = btn.getAttribute('data-tag');
+            if (btn.classList.contains('active')) {
+                btn.classList.remove('active');
+                selectedTags = selectedTags.filter(t => t !== tagName);
+            } else {
+                btn.classList.add('active');
+                selectedTags.push(tagName);
+            }
+            updateSelectedTagsDisplay();
+        }
+        
+        // 更新已选标签显示
+        function updateSelectedTagsDisplay() {
+            const container = document.getElementById('selectedTagsList');
+            const countBadge = document.getElementById('selectedCountBadge');
+            
+            if (selectedTags.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-tertiary); font-size:12px; padding:8px 0;">暂无选中标签，请点击上方标签选择</div>';
+                countBadge.textContent = '0';
+                return;
+            }
+            
+            container.innerHTML = selectedTags.map(tag => `
+                <div class="selected-tag">
+                    <span class="tag-name">${tag}</span>
+                    <span class="remove-tag" onclick="removeSelectedTagByName('${tag}')">✕</span>
+                </div>
+            `).join('');
+            countBadge.textContent = selectedTags.length;
+        }
+        
+        function removeSelectedTag(el) {
+            const tagName = el.closest('.selected-tag').querySelector('.tag-name').textContent;
+            removeSelectedTagByName(tagName);
+        }
+        
+        function removeSelectedTagByName(tagName) {
+            selectedTags = selectedTags.filter(t => t !== tagName);
+            const tagBtn = Array.from(document.querySelectorAll('.class-tag')).find(btn => btn.getAttribute('data-tag') === tagName);
+            if (tagBtn) tagBtn.classList.remove('active');
+            updateSelectedTagsDisplay();
+        }
+        
+        // 播放控制
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = isPlaying ? '⏸' : '▶';
+            btn.classList.toggle('playing', isPlaying);
+            
+            if (isPlaying) {
+                let lastTime = performance.now();
+                function playLoop(now) {
+                    const delta = Math.min(0.1, (now - lastTime) / 1000);
+                    lastTime = now;
+                    currentSeconds += delta * currentSpeed;
+                    if (currentSeconds >= totalSeconds) {
+                        currentSeconds = totalSeconds;
+                        isPlaying = false;
+                        btn.textContent = '▶';
+                        btn.classList.remove('playing');
+                    }
+                    updateTimelineUI();
+                    if (isPlaying) {
+                        animationId = requestAnimationFrame(playLoop);
+                    }
+                }
+                if (animationId) cancelAnimationFrame(animationId);
+                lastTime = performance.now();
+                animationId = requestAnimationFrame(playLoop);
+            } else {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+        }
+        
+        function setSpeed(speed) {
+            currentSpeed = speed;
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === `${speed}x`) btn.classList.add('active');
+            });
+        }
+        
+        // 更新计数
+        function updateCounts() {
+            const count = selectedTags.length;
+            document.getElementById('classifiedCount').textContent = count;
+            document.getElementById('sidebarCount').textContent = count;
+            document.getElementById('progressBadge').textContent = `${count}/15`;
+        }
+        
+        // 确认分类
+        function confirmClassification() {
+            if (selectedTags.length === 0) {
+                alert('请至少选择一个分类标签');
+                return;
+            }
+            const tagsText = selectedTags.join('、');
+            alert(`已保存分类：${tagsText}`);
+            updateCounts();
+        }
+        
+        function prevVideo() { alert('上一个视频'); }
+        function skipVideo() { alert('跳过'); }
+        function releaseTask() { alert('任务已释放'); }
+        function submitAll() { 
+            alert(`已提交 ${selectedTags.length} 个分类标签`); 
+        }
+        
+        function toggleSubmenu(el, subId) {
+            event.stopPropagation();
+            const subList = document.getElementById(subId);
+            const navItem = el.closest('.nav-item');
+            if (subList.style.maxHeight && subList.style.maxHeight !== '0px') {
+                subList.style.maxHeight = '0';
+                navItem.classList.remove('open');
+            } else {
+                subList.style.maxHeight = subList.scrollHeight + 'px';
+                navItem.classList.add('open');
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTimelineUI();
+            updateSelectedTagsDisplay();
+            updateCounts();
+            
+            // 设置默认选中标签的样式
+            document.querySelectorAll('.class-tag').forEach(btn => {
+                const tagName = btn.getAttribute('data-tag');
+                if (selectedTags.includes(tagName)) {
+                    btn.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

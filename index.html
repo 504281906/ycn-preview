@@ -1,68 +1,97 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高质量数据集平台 - 索引</title>
-    <style>
-        :root {
-            --primary: #1677ff;
-            --primary-hover: #4096ff;
-            --primary-light: #e6f4ff;
-            --text: #262626;
-            --text-secondary: #595959;
-            --text-tertiary: #8c8c8c;
-            --border: #d9d9d9;
-            --border-light: #f0f0f0;
-            --bg-white: #ffffff;
-            --radius: 8px;
-            --radius-sm: 6px;
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif; background:#f0f2f5; min-height:100vh; color:var(--text); font-size:14px; }
-
-        .sidebar { width:220px; background:#1a1a2e; display:flex; flex-direction:column; min-height:100vh; position:fixed; left:0; top:0; z-index:100; }
-        .sidebar-logo { padding:24px 20px; border-bottom:1px solid rgba(255,255,255,0.1); }
-        .sidebar-logo h1 { font-size:16px; color:#fff; font-weight:600; }
-        .sidebar-logo span { font-size:12px; color:var(--primary); display:block; margin-top:4px; }
-        .sidebar-nav { flex:1; padding:12px 0; overflow-y:auto; }
-        .nav-item { display:flex; align-items:center; padding:12px 20px; color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer; gap:10px; border-right:3px solid transparent; }
-        .nav-item:hover { background:rgba(255,255,255,0.05); color:#fff; }
-        .nav-item.has-sub { justify-content:flex-start; }
-        .nav-item.has-sub.open { background:rgba(74,158,255,0.15); color:var(--primary); border-right-color:var(--primary); }
-        .nav-item .icon { width:20px; text-align:center; font-size:14px; font-weight:bold; color:#8c8c8c; flex-shrink:0; }
-        .nav-item .text { flex:1; }
-        .nav-item .arrow { font-size:10px; color:rgba(255,255,255,0.4); transition:transform 0.2s; }
-        .nav-item.has-sub.open .arrow { transform:rotate(90deg); }
-        .nav-sub-list { display:none; background:rgba(0,0,0,0.15); }
-        .nav-sub-list.open { display:block; }
-        .nav-sub-item { display:flex; align-items:center; padding:10px 20px 10px 50px; color:rgba(255,255,255,0.5); font-size:13px; cursor:pointer; gap:8px; }
-        .nav-sub-item:hover { color:#fff; background:rgba(255,255,255,0.05); }
-        .nav-sub-item .dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.3); flex-shrink:0; }
-        .sidebar-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,0.1); }
-        .user-info { display:flex; align-items:center; gap:10px; }
-        .user-avatar { width:32px; height:32px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; }
-        .user-name { font-size:13px; color:rgba(255,255,255,0.8); }
-        .user-role { font-size:11px; color:rgba(255,255,255,0.4); }
-
-        .main { margin-left:220px; flex:1; padding:24px; }
-        .page-header { background:var(--bg-white); border-radius:var(--radius); border:1px solid var(--border-light); padding:24px; margin-bottom:24px; }
-        .page-header h1 { font-size:20px; font-weight:600; color:var(--text); margin-bottom:8px; }
-        .page-header p { color:var(--text-secondary); font-size:14px; }
-
-        .menu-section { background:var(--bg-white); border-radius:var(--radius); border:1px solid var(--border-light); margin-bottom:20px; overflow:hidden; }
-        .menu-section-header { padding:16px 20px; background:#fafafa; border-bottom:1px solid var(--border-light); font-size:15px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:8px; }
-        .menu-section-header .count { font-size:12px; background:var(--primary-light); color:var(--primary); padding:2px 8px; border-radius:10px; font-weight:500; }
-
-        .page-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px; padding:20px; }
-        .page-card { border:1px solid var(--border-light); border-radius:var(--radius-sm); padding:16px; cursor:pointer; transition:all 0.2s; background:#fff; text-decoration:none; display:block; color:inherit; }
-        .page-card:hover { border-color:var(--primary); box-shadow:0 2px 8px rgba(22,119,255,0.1); transform:translateY(-1px); }
-        .page-card .card-title { font-size:14px; font-weight:500; color:var(--text); margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .page-card .card-level2 { font-size:12px; color:var(--text-tertiary); margin-bottom:4px; }
-        .page-card .card-link { font-size:12px; color:var(--primary); }
-
-        .empty-section { padding:20px; text-align:center; color:var(--text-tertiary); font-size:13px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据平台 - 功能预览</title>
+<style>
+:root {
+    --primary: #1677ff;
+    --primary-hover: #4096ff;
+    --bg: #f0f2f5;
+    --bg-white: #ffffff;
+    --text: #262626;
+    --text-secondary: #595959;
+    --border: #d9d9d9;
+    --border-light: #f0f0f0;
+    --shadow: 0 1px 2px rgba(0,0,0,0.03),0 1px 6px -1px rgba(0,0,0,0.02);
+    --radius: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: "PingFang SC","Microsoft YaHei",-apple-system,sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    color: var(--text);
+    font-size: 14px;
+}
+.sidebar {
+    width: 220px;
+    background: #001529;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: fixed;
+    left: 0; top: 0;
+    z-index: 100;
+    overflow-y: auto;
+}
+.sidebar-logo { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-logo h1 { font-size: 16px; font-weight: 600; color: #fff; }
+.sidebar-logo span { font-size: 12px; color: var(--primary); display: block; margin-top: 4px; }
+.sidebar-nav { flex: 1; padding: 12px 0; }
+.nav-item {
+    display: flex; align-items: center;
+    padding: 10px 20px;
+    color: rgba(255,255,255,0.65);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    gap: 10px;
+    border-bottom: 2px solid transparent;
+}
+.nav-item:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+.nav-item.active { background: rgba(255,255,255,0.08); color: #fff; border-bottom-color: var(--primary); }
+.nav-item .icon { width: 20px; text-align: center; font-size: 14px; flex-shrink: 0; }
+.nav-item .text { flex: 1; }
+.group-header { margin-top: 8px; }
+.nav-sub { margin-left: 32px; padding-left: 12px; border-left: 1px solid rgba(255,255,255,0.1); margin-top: 4px; margin-bottom: 8px; }
+.nav-sub-item {
+    display: flex; align-items: center;
+    padding: 8px 16px;
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    gap: 8px;
+    border-radius: 6px;
+}
+.nav-sub-item:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+.nav-sub-item .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+.main { margin-left: 220px; flex: 1; min-height: 100vh; }
+.topbar {
+    height: 56px;
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center;
+    padding: 0 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.topbar-title { font-size: 15px; font-weight: 500; }
+.content { padding: 24px; }
+.page-header { margin-bottom: 24px; }
+.page-header h2 { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.page-header p { font-size: 13px; color: var(--text-secondary); }
+.card-group { margin-bottom: 32px; }
+.group-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 12px; padding-left: 4px; border-left: 3px solid var(--primary); }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.page-card { display: block; background: var(--bg-white); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border-light); padding: 16px 20px; text-decoration: none; transition: all 0.2s; cursor: pointer; }
+.page-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(22,119,255,0.15); transform: translateY(-1px); }
+.card-level1 { font-size: 11px; color: #8c8c8c; margin-bottom: 3px; }
+.card-level2 { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+.card-title { font-size: 14px; font-weight: 500; color: var(--text); }
+</style>
 </head>
 <body>
 <div class="sidebar">
@@ -71,280 +100,302 @@
         <span>高质量数据集</span>
     </div>
     <div class="sidebar-nav">
-        <div class="nav-item" data-menu="工作台"><span class="icon">◈</span><span class="text">工作台</span></div>
-        <div class="nav-item has-sub" data-menu="数据资源"><span class="icon">☰</span><span class="text">数据资源</span><span class="arrow">›</span></div>
-        <div class="nav-sub-list" data-menu="数据资源">
-            <div class="nav-sub-item"><span class="dot"></span>中台导入</div>
-            <div class="nav-sub-item"><span class="dot"></span>本地导入</div>
-            <div class="nav-sub-item"><span class="dot"></span>互联网采集</div>
-            <div class="nav-sub-item"><span class="dot"></span>系统导入</div>
-            <div class="nav-sub-item"><span class="dot"></span>资源存储</div>
-        </div>
-        <div class="nav-item has-sub" data-menu="数据集管理"><span class="icon">▦</span><span class="text">数据集管理</span><span class="arrow">›</span></div>
-        <div class="nav-sub-list" data-menu="数据集管理">
-            <div class="nav-sub-item"><span class="dot"></span>原始数据集</div>
-        </div>
-        <div class="nav-item has-sub" data-menu="标注中心"><span class="icon">✎</span><span class="text">标注中心</span><span class="arrow">›</span></div>
-        <div class="nav-sub-list" data-menu="标注中心">
-            <div class="nav-sub-item"><span class="dot"></span>标注工作台</div>
-            <div class="nav-sub-item"><span class="dot"></span>任务管理</div>
-            <div class="nav-sub-item"><span class="dot"></span>标注大厅</div>
-            <div class="nav-sub-item"><span class="dot"></span>标注数据集</div>
-            <div class="nav-sub-item"><span class="dot"></span>标注模板</div>
-        </div>
-        <div class="nav-item has-sub" data-menu="专题库"><span class="icon">▤</span><span class="text">专题库</span><span class="arrow">›</span></div>
-        <div class="nav-sub-list" data-menu="专题库">
-            <div class="nav-sub-item"><span class="dot"></span>专题管理</div>
-            <div class="nav-sub-item"><span class="dot"></span>专题视图</div>
-        </div>
-        <div class="nav-item" data-menu="系统设置"><span class="icon">⚙</span><span class="text">系统设置</span></div>
-    </div>
-    <div class="sidebar-footer">
-        <div class="user-info"><div class="user-avatar">张</div><div><div class="user-name">张三</div><div class="user-role">标注员</div></div></div>
+        <div class="nav-item"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+            <div class="group-header" style="color:rgba(255,255,255,0.35);font-size:11px;padding:6px 16px 2px 16px;">标注中心</div>
+            <div class="nav-sub">
+                <div class="nav-sub-item" onclick="location.href='音频分割.html'"><span class="dot"></span><span>音频分割</span></div>
+                <div class="nav-sub-item" onclick="location.href='视频分割.html'"><span class="dot"></span><span>视频分割</span></div>
+                <div class="nav-sub-item" onclick="location.href='目标检测.html'"><span class="dot"></span><span>目标检测</span></div>
+                <div class="nav-sub-item" onclick="location.href='视频分类.html'"><span class="dot"></span><span>视频分类</span></div>
+                <div class="nav-sub-item" onclick="location.href='音频分类.html'"><span class="dot"></span><span>音频分类</span></div>
+                <div class="nav-sub-item" onclick="location.href='实体识别.html'"><span class="dot"></span><span>实体识别</span></div>
+                <div class="nav-sub-item" onclick="location.href='实体关系.html'"><span class="dot"></span><span>实体关系</span></div>
+                <div class="nav-sub-item" onclick="location.href='文档分类.html'"><span class="dot"></span><span>文档分类</span></div>
+                <div class="nav-sub-item" onclick="location.href='图片分类.html'"><span class="dot"></span><span>图片分类</span></div>
+                <div class="nav-sub-item" onclick="location.href='创建_1.html'"><span class="dot"></span><span>创建</span></div>
+                <div class="nav-sub-item" onclick="location.href='详情_2.html'"><span class="dot"></span><span>详情</span></div>
+                <div class="nav-sub-item" onclick="location.href='任务包.html'"><span class="dot"></span><span>任务包</span></div>
+                <div class="nav-sub-item" onclick="location.href='列表_10.html'"><span class="dot"></span><span>列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='任务列表.html'"><span class="dot"></span><span>任务列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='列表_10.html'"><span class="dot"></span><span>列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='列表_10.html'"><span class="dot"></span><span>列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='创建_1.html'"><span class="dot"></span><span>创建</span></div>
+            </div>
+            <div class="group-header" style="color:rgba(255,255,255,0.35);font-size:11px;padding:6px 16px 2px 16px;">数据集</div>
+            <div class="nav-sub">
+                <div class="nav-sub-item" onclick="location.href='列表_10.html'"><span class="dot"></span><span>列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='数据列表.html'"><span class="dot"></span><span>数据列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='新建.html'"><span class="dot"></span><span>新建</span></div>
+                <div class="nav-sub-item" onclick="location.href='详情_2.html'"><span class="dot"></span><span>详情</span></div>
+            </div>
+            <div class="group-header" style="color:rgba(255,255,255,0.35);font-size:11px;padding:6px 16px 2px 16px;">工作台</div>
+            <div class="nav-sub">
+                <div class="nav-sub-item" onclick="location.href='工作台.html'"><span class="dot"></span><span>工作台</span></div>
+            </div>
+            <div class="group-header" style="color:rgba(255,255,255,0.35);font-size:11px;padding:6px 16px 2px 16px;">数据资源</div>
+            <div class="nav-sub">
+                <div class="nav-sub-item" onclick="location.href='列表_10.html'"><span class="dot"></span><span>列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='列表_10.html'"><span class="dot"></span><span>列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='列表_10.html'"><span class="dot"></span><span>列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='列表_10.html'"><span class="dot"></span><span>列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='列表_10.html'"><span class="dot"></span><span>列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='新增_4.html'"><span class="dot"></span><span>新增</span></div>
+                <div class="nav-sub-item" onclick="location.href='新增_4.html'"><span class="dot"></span><span>新增</span></div>
+                <div class="nav-sub-item" onclick="location.href='新增_4.html'"><span class="dot"></span><span>新增</span></div>
+                <div class="nav-sub-item" onclick="location.href='新增_4.html'"><span class="dot"></span><span>新增</span></div>
+            </div>
+            <div class="group-header" style="color:rgba(255,255,255,0.35);font-size:11px;padding:6px 16px 2px 16px;">系统设置</div>
+            <div class="nav-sub">
+                <div class="nav-sub-item" onclick="location.href='系统设置.html'"><span class="dot"></span><span>系统设置</span></div>
+            </div>
+            <div class="group-header" style="color:rgba(255,255,255,0.35);font-size:11px;padding:6px 16px 2px 16px;">专题库</div>
+            <div class="nav-sub">
+                <div class="nav-sub-item" onclick="location.href='数据维护.html'"><span class="dot"></span><span>数据维护</span></div>
+                <div class="nav-sub-item" onclick="location.href='列表_10.html'"><span class="dot"></span><span>列表</span></div>
+                <div class="nav-sub-item" onclick="location.href='详情_2.html'"><span class="dot"></span><span>详情</span></div>
+                <div class="nav-sub-item" onclick="location.href='数据详情.html'"><span class="dot"></span><span>数据详情</span></div>
+                <div class="nav-sub-item" onclick="location.href='新增_4.html'"><span class="dot"></span><span>新增</span></div>
+                <div class="nav-sub-item" onclick="location.href='列表_10.html'"><span class="dot"></span><span>列表</span></div>
+            </div>
+
     </div>
 </div>
-    <div class="main">
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-title">功能预览</div>
+    </div>
+    <div class="content">
         <div class="page-header">
-            <h1>广东省文化馆 · 数据集管理平台</h1>
-            <p>共 38 个页面 · 点击卡片可直接预览对应的页面效果</p>
+            <h2>全部功能</h2>
+            <p>共 38 个功能页面</p>
         </div>
-
-        <div class="menu-section">
-            <div class="menu-section-header">
-                工作台
-                <span class="count">1</span>
+            <div class="card-group">
+                <div class="group-title">标注中心</div>
+                <div class="card-grid">
+                    <a class="page-card" href="音频分割.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注工作台</div>
+                        <div class="card-title">音频分割</div>
+                    </a>
+                    <a class="page-card" href="视频分割.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注工作台</div>
+                        <div class="card-title">视频分割</div>
+                    </a>
+                    <a class="page-card" href="目标检测.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注工作台</div>
+                        <div class="card-title">目标检测</div>
+                    </a>
+                    <a class="page-card" href="视频分类.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注工作台</div>
+                        <div class="card-title">视频分类</div>
+                    </a>
+                    <a class="page-card" href="音频分类.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注工作台</div>
+                        <div class="card-title">音频分类</div>
+                    </a>
+                    <a class="page-card" href="实体识别.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注工作台</div>
+                        <div class="card-title">实体识别</div>
+                    </a>
+                    <a class="page-card" href="实体关系.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注工作台</div>
+                        <div class="card-title">实体关系</div>
+                    </a>
+                    <a class="page-card" href="文档分类.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注工作台</div>
+                        <div class="card-title">文档分类</div>
+                    </a>
+                    <a class="page-card" href="图片分类.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注工作台</div>
+                        <div class="card-title">图片分类</div>
+                    </a>
+                    <a class="page-card" href="创建_1.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">任务管理</div>
+                        <div class="card-title">创建</div>
+                    </a>
+                    <a class="page-card" href="详情_2.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">任务管理</div>
+                        <div class="card-title">详情</div>
+                    </a>
+                    <a class="page-card" href="任务包.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">任务管理</div>
+                        <div class="card-title">任务包</div>
+                    </a>
+                    <a class="page-card" href="列表_10.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">任务管理</div>
+                        <div class="card-title">列表</div>
+                    </a>
+                    <a class="page-card" href="任务列表.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注大厅</div>
+                        <div class="card-title">任务列表</div>
+                    </a>
+                    <a class="page-card" href="列表_10.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注数据集</div>
+                        <div class="card-title">列表</div>
+                    </a>
+                    <a class="page-card" href="列表_10.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注模板</div>
+                        <div class="card-title">列表</div>
+                    </a>
+                    <a class="page-card" href="创建_1.html">
+                        <div class="card-level1">标注中心</div>
+                        <div class="card-level2">标注模板</div>
+                        <div class="card-title">创建</div>
+                    </a>
+                </div>
             </div>
-            <div class="page-grid">
-                <a class="page-card" href="工作台.html">
-                    <div class="card-level2">工作台</div>
-                    <div class="card-title">工作台</div>
-                    <div class="card-link">工作台.html →</div>
-                </a>
+            <div class="card-group">
+                <div class="group-title">数据集</div>
+                <div class="card-grid">
+                    <a class="page-card" href="列表_10.html">
+                        <div class="card-level1">数据集</div>
+                        <div class="card-level2">原始数据集</div>
+                        <div class="card-title">列表</div>
+                    </a>
+                    <a class="page-card" href="数据列表.html">
+                        <div class="card-level1">数据集</div>
+                        <div class="card-level2">原始数据集</div>
+                        <div class="card-title">数据列表</div>
+                    </a>
+                    <a class="page-card" href="新建.html">
+                        <div class="card-level1">数据集</div>
+                        <div class="card-level2">原始数据集</div>
+                        <div class="card-title">新建</div>
+                    </a>
+                    <a class="page-card" href="详情_2.html">
+                        <div class="card-level1">数据集</div>
+                        <div class="card-level2">原始数据集</div>
+                        <div class="card-title">详情</div>
+                    </a>
+                </div>
             </div>
-        </div>
-
-        <div class="menu-section">
-            <div class="menu-section-header">
-                数据资源
-                <span class="count">9</span>
+            <div class="card-group">
+                <div class="group-title">工作台</div>
+                <div class="card-grid">
+                    <a class="page-card" href="工作台.html">
+                        <div class="card-level1">工作台</div>
+                        <div class="card-level2">工作台</div>
+                        <div class="card-title">工作台</div>
+                    </a>
+                </div>
             </div>
-            <div class="page-grid">
-                <a class="page-card" href="列表_1.html">
-                    <div class="card-level2">中台导入</div>
-                    <div class="card-title">列表</div>
-                    <div class="card-link">列表_1.html →</div>
-                </a>
-                <a class="page-card" href="列表_2.html">
-                    <div class="card-level2">互联网采集</div>
-                    <div class="card-title">列表</div>
-                    <div class="card-link">列表_2.html →</div>
-                </a>
-                <a class="page-card" href="列表_3.html">
-                    <div class="card-level2">本地导入</div>
-                    <div class="card-title">列表</div>
-                    <div class="card-link">列表_3.html →</div>
-                </a>
-                <a class="page-card" href="列表_4.html">
-                    <div class="card-level2">系统导入</div>
-                    <div class="card-title">列表</div>
-                    <div class="card-link">列表_4.html →</div>
-                </a>
-                <a class="page-card" href="列表_5.html">
-                    <div class="card-level2">资源存储</div>
-                    <div class="card-title">列表</div>
-                    <div class="card-link">列表_5.html →</div>
-                </a>
-                <a class="page-card" href="新增.html">
-                    <div class="card-level2">中台导入</div>
-                    <div class="card-title">新增</div>
-                    <div class="card-link">新增.html →</div>
-                </a>
-                <a class="page-card" href="新增_1.html">
-                    <div class="card-level2">互联网采集</div>
-                    <div class="card-title">新增</div>
-                    <div class="card-link">新增_1.html →</div>
-                </a>
-                <a class="page-card" href="新增_2.html">
-                    <div class="card-level2">系统导入</div>
-                    <div class="card-title">新增</div>
-                    <div class="card-link">新增_2.html →</div>
-                </a>
-                <a class="page-card" href="新增_4.html">
-                    <div class="card-level2">本地导入</div>
-                    <div class="card-title">新增</div>
-                    <div class="card-link">新增_4.html →</div>
-                </a>
+            <div class="card-group">
+                <div class="group-title">数据资源</div>
+                <div class="card-grid">
+                    <a class="page-card" href="列表_10.html">
+                        <div class="card-level1">数据资源</div>
+                        <div class="card-level2">中台导入</div>
+                        <div class="card-title">列表</div>
+                    </a>
+                    <a class="page-card" href="列表_10.html">
+                        <div class="card-level1">数据资源</div>
+                        <div class="card-level2">互联网采集</div>
+                        <div class="card-title">列表</div>
+                    </a>
+                    <a class="page-card" href="列表_10.html">
+                        <div class="card-level1">数据资源</div>
+                        <div class="card-level2">本地导入</div>
+                        <div class="card-title">列表</div>
+                    </a>
+                    <a class="page-card" href="列表_10.html">
+                        <div class="card-level1">数据资源</div>
+                        <div class="card-level2">系统导入</div>
+                        <div class="card-title">列表</div>
+                    </a>
+                    <a class="page-card" href="列表_10.html">
+                        <div class="card-level1">数据资源</div>
+                        <div class="card-level2">资源存储</div>
+                        <div class="card-title">列表</div>
+                    </a>
+                    <a class="page-card" href="新增_4.html">
+                        <div class="card-level1">数据资源</div>
+                        <div class="card-level2">中台导入</div>
+                        <div class="card-title">新增</div>
+                    </a>
+                    <a class="page-card" href="新增_4.html">
+                        <div class="card-level1">数据资源</div>
+                        <div class="card-level2">互联网采集</div>
+                        <div class="card-title">新增</div>
+                    </a>
+                    <a class="page-card" href="新增_4.html">
+                        <div class="card-level1">数据资源</div>
+                        <div class="card-level2">系统导入</div>
+                        <div class="card-title">新增</div>
+                    </a>
+                    <a class="page-card" href="新增_4.html">
+                        <div class="card-level1">数据资源</div>
+                        <div class="card-level2">本地导入</div>
+                        <div class="card-title">新增</div>
+                    </a>
+                </div>
             </div>
-        </div>
-
-        <div class="menu-section">
-            <div class="menu-section-header">
-                数据集管理
-                <span class="count">0</span>
+            <div class="card-group">
+                <div class="group-title">系统设置</div>
+                <div class="card-grid">
+                    <a class="page-card" href="系统设置.html">
+                        <div class="card-level1">系统设置</div>
+                        <div class="card-level2">系统设置</div>
+                        <div class="card-title">系统设置</div>
+                    </a>
+                </div>
             </div>
-            <div class="empty-section">暂无页面</div>
-        </div>
-
-        <div class="menu-section">
-            <div class="menu-section-header">
-                标注中心
-                <span class="count">17</span>
+            <div class="card-group">
+                <div class="group-title">专题库</div>
+                <div class="card-grid">
+                    <a class="page-card" href="数据维护.html">
+                        <div class="card-level1">专题库</div>
+                        <div class="card-level2">专题管理</div>
+                        <div class="card-title">数据维护</div>
+                    </a>
+                    <a class="page-card" href="列表_10.html">
+                        <div class="card-level1">专题库</div>
+                        <div class="card-level2">专题视图</div>
+                        <div class="card-title">列表</div>
+                    </a>
+                    <a class="page-card" href="详情_2.html">
+                        <div class="card-level1">专题库</div>
+                        <div class="card-level2">专题视图</div>
+                        <div class="card-title">详情</div>
+                    </a>
+                    <a class="page-card" href="数据详情.html">
+                        <div class="card-level1">专题库</div>
+                        <div class="card-level2">专题视图</div>
+                        <div class="card-title">数据详情</div>
+                    </a>
+                    <a class="page-card" href="新增_4.html">
+                        <div class="card-level1">专题库</div>
+                        <div class="card-level2">专题管理</div>
+                        <div class="card-title">新增</div>
+                    </a>
+                    <a class="page-card" href="列表_10.html">
+                        <div class="card-level1">专题库</div>
+                        <div class="card-level2">专题管理</div>
+                        <div class="card-title">列表</div>
+                    </a>
+                </div>
             </div>
-            <div class="page-grid">
-                <a class="page-card" href="音频分割.html">
-                    <div class="card-level2">标注工作台</div>
-                    <div class="card-title">音频分割</div>
-                    <div class="card-link">音频分割.html →</div>
-                </a>
-                <a class="page-card" href="视频分割.html">
-                    <div class="card-level2">标注工作台</div>
-                    <div class="card-title">视频分割</div>
-                    <div class="card-link">视频分割.html →</div>
-                </a>
-                <a class="page-card" href="目标检测.html">
-                    <div class="card-level2">标注工作台</div>
-                    <div class="card-title">目标检测</div>
-                    <div class="card-link">目标检测.html →</div>
-                </a>
-                <a class="page-card" href="视频分类.html">
-                    <div class="card-level2">标注工作台</div>
-                    <div class="card-title">视频分类</div>
-                    <div class="card-link">视频分类.html →</div>
-                </a>
-                <a class="page-card" href="音频分类.html">
-                    <div class="card-level2">标注工作台</div>
-                    <div class="card-title">音频分类</div>
-                    <div class="card-link">音频分类.html →</div>
-                </a>
-                <a class="page-card" href="实体识别.html">
-                    <div class="card-level2">标注工作台</div>
-                    <div class="card-title">实体识别</div>
-                    <div class="card-link">实体识别.html →</div>
-                </a>
-                <a class="page-card" href="实体关系.html">
-                    <div class="card-level2">标注工作台</div>
-                    <div class="card-title">实体关系</div>
-                    <div class="card-link">实体关系.html →</div>
-                </a>
-                <a class="page-card" href="文档分类.html">
-                    <div class="card-level2">标注工作台</div>
-                    <div class="card-title">文档分类</div>
-                    <div class="card-link">文档分类.html →</div>
-                </a>
-                <a class="page-card" href="图片分类.html">
-                    <div class="card-level2">标注工作台</div>
-                    <div class="card-title">图片分类</div>
-                    <div class="card-link">图片分类.html →</div>
-                </a>
-                <a class="page-card" href="创建.html">
-                    <div class="card-level2">任务管理</div>
-                    <div class="card-title">创建</div>
-                    <div class="card-link">创建.html →</div>
-                </a>
-                <a class="page-card" href="详情_1.html">
-                    <div class="card-level2">任务管理</div>
-                    <div class="card-title">详情</div>
-                    <div class="card-link">详情_1.html →</div>
-                </a>
-                <a class="page-card" href="任务包.html">
-                    <div class="card-level2">任务管理</div>
-                    <div class="card-title">任务包</div>
-                    <div class="card-link">任务包.html →</div>
-                </a>
-                <a class="page-card" href="列表_6.html">
-                    <div class="card-level2">任务管理</div>
-                    <div class="card-title">列表</div>
-                    <div class="card-link">列表_6.html →</div>
-                </a>
-                <a class="page-card" href="任务列表.html">
-                    <div class="card-level2">标注大厅</div>
-                    <div class="card-title">任务列表</div>
-                    <div class="card-link">任务列表.html →</div>
-                </a>
-                <a class="page-card" href="列表_7.html">
-                    <div class="card-level2">标注数据集</div>
-                    <div class="card-title">列表</div>
-                    <div class="card-link">列表_7.html →</div>
-                </a>
-                <a class="page-card" href="列表_8.html">
-                    <div class="card-level2">标注模板</div>
-                    <div class="card-title">列表</div>
-                    <div class="card-link">列表_8.html →</div>
-                </a>
-                <a class="page-card" href="创建_1.html">
-                    <div class="card-level2">标注模板</div>
-                    <div class="card-title">创建</div>
-                    <div class="card-link">创建_1.html →</div>
-                </a>
-            </div>
-        </div>
-
-        <div class="menu-section">
-            <div class="menu-section-header">
-                专题库
-                <span class="count">6</span>
-            </div>
-            <div class="page-grid">
-                <a class="page-card" href="数据维护.html">
-                    <div class="card-level2">专题管理</div>
-                    <div class="card-title">数据维护</div>
-                    <div class="card-link">数据维护.html →</div>
-                </a>
-                <a class="page-card" href="列表_9.html">
-                    <div class="card-level2">专题视图</div>
-                    <div class="card-title">列表</div>
-                    <div class="card-link">列表_9.html →</div>
-                </a>
-                <a class="page-card" href="详情_2.html">
-                    <div class="card-level2">专题视图</div>
-                    <div class="card-title">详情</div>
-                    <div class="card-link">详情_2.html →</div>
-                </a>
-                <a class="page-card" href="数据详情.html">
-                    <div class="card-level2">专题视图</div>
-                    <div class="card-title">数据详情</div>
-                    <div class="card-link">数据详情.html →</div>
-                </a>
-                <a class="page-card" href="新增_3.html">
-                    <div class="card-level2">专题管理</div>
-                    <div class="card-title">新增</div>
-                    <div class="card-link">新增_3.html →</div>
-                </a>
-                <a class="page-card" href="列表_10.html">
-                    <div class="card-level2">专题管理</div>
-                    <div class="card-title">列表</div>
-                    <div class="card-link">列表_10.html →</div>
-                </a>
-            </div>
-        </div>
-
-        <div class="menu-section">
-            <div class="menu-section-header">
-                系统设置
-                <span class="count">1</span>
-            </div>
-            <div class="page-grid">
-                <a class="page-card" href="系统设置.html">
-                    <div class="card-level2">系统设置</div>
-                    <div class="card-title">系统设置</div>
-                    <div class="card-link">系统设置.html →</div>
-                </a>
-            </div>
-        </div>
 
     </div>
-    <script>
-        // Toggle sub menus
-        document.querySelectorAll('.nav-item.has-sub').forEach(item => {
-            item.addEventListener('click', () => {
-                const menuName = item.getAttribute('data-menu');
-                const subList = document.querySelector(`.nav-sub-list[data-menu="${menuName}"]`);
-                if (subList) {
-                    item.classList.toggle('open');
-                    subList.classList.toggle('open');
-                }
-            });
-        });
-    </script>
+</div>
 </body>
 </html>

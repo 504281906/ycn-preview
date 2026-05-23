@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片分类 - 广东省文化馆</title>
+    <style>
+        :root {
+            --primary: #1677ff;
+            --primary-hover: #4096ff;
+            --primary-light: #e6f4ff;
+            --success: #52c41a;
+            --success-light: #f6ffed;
+            --warning: #faad14;
+            --warning-light: #fff7e6;
+            --error: #ff4d4f;
+            --text: #262626;
+            --text-secondary: #595959;
+            --text-tertiary: #8c8c8c;
+            --border: #d9d9d9;
+            --border-light: #f0f0f0;
+            --bg: #fafafa;
+            --bg-white: #ffffff;
+            --radius: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Left Sidebar */
+        .sidebar { width: 200px; background: #1a1a2e; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; z-index: 10; }
+        .sidebar-logo { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 14px; color: #fff; font-weight: 600; }
+        .sidebar-logo span { font-size: 11px; color: var(--primary); display: block; margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; padding: 10px 16px; color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; transition: all 0.2s; gap: 8px; user-select: none; border-right: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.has-sub { justify-content: flex-start; }
+        .nav-item.has-sub.open { background: rgba(74,158,255,0.15); color: var(--primary); border-right-color: var(--primary); }
+        .nav-item .icon { width: 18px; text-align: center; font-size: 12px; color: #8c8c8c; flex-shrink: 0; }
+        .nav-item .text { flex: 1; }
+        .nav-item .arrow { font-size: 10px; color: rgba(255,255,255,0.4); transition: transform 0.2s; }
+        .nav-item.has-sub.open .arrow { transform: rotate(90deg); }
+        .nav-sub-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgba(0,0,0,0.15); }
+        .nav-sub-item { display: flex; align-items: center; padding: 8px 16px 8px 42px; color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; transition: all 0.2s; gap: 8px; }
+        .nav-sub-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-sub-item.active { color: var(--primary); }
+        .nav-sub-item .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+        .nav-sub-item.active .dot { background: var(--primary); }
+        .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; }
+        .user-name { font-size: 12px; color: rgba(255,255,255,0.8); }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+        /* Main area */
+        .main { margin-left: 200px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* Topbar */
+        .topbar {
+            height: 48px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-tertiary); }
+        .topbar-breadcrumb span { color: var(--text); }
+        .topbar-actions { display: flex; gap: 12px; }
+
+        /* Button */
+        .btn { height: 32px; padding: 0 14px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; font-weight: 500; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-default { background: var(--bg-white); border: 1px solid var(--border); color: var(--text); }
+        .btn-default:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Workbench */
+        .workbench {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 12px 24px;
+            background: #f0f2f5;
+            max-height: 1000px;
+            height: 1000px;
+        }
+
+        .wb-header {
+            background: var(--bg-white);
+            border-radius: var(--radius) var(--radius) 0 0;
+            border: 1px solid var(--border-light);
+            border-bottom: none;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wb-header-left .wb-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .wb-header-left .wb-meta { font-size: 12px; color: var(--text-tertiary); display: flex; gap: 16px; flex-wrap: wrap; }
+        .wb-header-right { display: flex; gap: 10px; align-items: center; }
+        .divider-1, .divider-2 { height: 1px; background: var(--border-light); }
+
+        /* 导航标签 */
+        .wb-nav {
+            background: var(--bg-white);
+            border-left: 1px solid var(--border-light);
+            border-right: 1px solid var(--border-light);
+            padding: 0 20px;
+            display: flex;
+            gap: 28px;
+        }
+        .wb-nav-item {
+            padding: 10px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.2s;
+        }
+        .wb-nav-item:hover { color: var(--text); }
+        .wb-nav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        /* 主体区域 */
+        .wb-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+        }
+
+        /* 左侧图片区域 */
+        .image-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-right: 1px solid var(--border-light);
+        }
+        .image-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg);
+        }
+        .image-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .image-meta {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+        .image-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #f5f5f5;
+            overflow: auto;
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* 右侧标签区域 */
+        .tags-area {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-white);
+            flex-shrink: 0;
+        }
+        .tags-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .tags-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .tags-header p {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+        .tags-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* 标签分类区块 */
+        .tag-category {
+            margin-bottom: 20px;
+        }
+        .category-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .tag-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .tag-btn {
+            padding: 6px 16px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            background: var(--bg-white);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tag-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+        .tag-btn.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 500; box-shadow: var(--shadow-sm); }
+
+        /* 已选标签展示 */
+        .selected-tags-section {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-light);
+        }
+        .selected-tags-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .selected-tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .selected-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px 4px 14px;
+            border-radius: 24px;
+            font-size: 12px;
+            background: #f0f5ff;
+            border: 1px solid var(--primary-light);
+            transition: all 0.2s;
+        }
+        .selected-tag .tag-name { color: var(--primary); font-weight: 500; }
+        .remove-tag {
+            color: var(--text-tertiary);
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 12px;
+        }
+        .remove-tag:hover { color: var(--error); background: rgba(255,77,79,0.1); }
+        .count-badge {
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        /* Footer */
+        .wb-footer {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+        .wb-footer-btns { display: flex; gap: 10px; }
+        .progress-info {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            background: var(--bg);
+            padding: 4px 12px;
+            border-radius: 16px;
+        }
+        .progress-info strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>数据集管理平台</h1>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+    </div>
+</div>
+<div class="main">
+        <div class="topbar">
+            <div class="topbar-breadcrumb">
+                <span>广东省文化馆</span><span>›</span><span>数字资源标注</span><span>›</span>
+                <span>图片分类</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-default" onclick="history.back()">返回列表</button>
+                <button class="btn btn-primary" onclick="saveAll()">提交全部</button>
+            </div>
+        </div>
+
+        <div class="workbench">
+            <div class="wb-header">
+                <div class="wb-header-left">
+                    <div class="wb-title">非遗活动图片 · 图片分类标注</div>
+                    <div class="wb-meta">
+                        <span>任务ID：GDSG-IMG-CLASS-001</span>
+                        <span>图片数：36</span>
+                        <span>已分类：<span id="classifiedCount">0</span>/36</span>
+                    </div>
+                </div>
+                <div class="wb-header-right">
+                    <div style="font-size:12px;color:var(--text-secondary);">标注员：李华</div>
+                </div>
+            </div>
+            <div class="divider-1"></div>
+            
+            <!-- 导航标签 -->
+            <div class="wb-nav">
+                <div class="wb-nav-item active">待分类</div>
+                <div class="wb-nav-item">已分类</div>
+                <div class="wb-nav-item">全部图片</div>
+            </div>
+            <div class="divider-2"></div>
+
+            <div class="wb-body">
+                <!-- 左侧图片区域 -->
+                <div class="image-area">
+                    <div class="image-header">
+                        <div class="image-title">广府庙会 · 醒狮表演</div>
+                        <div class="image-meta">拍摄：李华 · 来源：广东省文化馆 · 拍摄日期：2024-02-24</div>
+                    </div>
+                    <div class="image-container">
+                        <canvas id="imageCanvas" class="image-preview" width="400" height="300" style="max-width:100%; max-height:100%;"></canvas>
+                    </div>
+                </div>
+
+                <!-- 右侧标签区域 -->
+                <div class="tags-area">
+                    <div class="tags-header">
+                        <h3>图片分类标签</h3>
+                        <p>点击标签进行标注（可多选）</p>
+                    </div>
+                    <div class="tags-body">
+                        <!-- 主题分类 -->
+                        <div class="tag-category">
+                            <div class="category-title">主题分类</div>
+                            <div class="tag-grid" id="themeTags">
+                                <span class="tag-btn" data-tag="粤剧表演">粤剧表演</span>
+                                <span class="tag-btn" data-tag="醒狮助兴">醒狮助兴</span>
+                                <span class="tag-btn" data-tag="非遗展示">非遗展示</span>
+                                <span class="tag-btn" data-tag="传统舞蹈">传统舞蹈</span>
+                                <span class="tag-btn" data-tag="民俗活动">民俗活动</span>
+                                <span class="tag-btn" data-tag="节庆庙会">节庆庙会</span>
+                            </div>
+                        </div>
+
+                        <!-- 内容类型 -->
+                        <div class="tag-category">
+                            <div class="category-title">内容类型</div>
+                            <div class="tag-grid" id="typeTags">
+                                <span class="tag-btn" data-tag="活动现场">活动现场</span>
+                                <span class="tag-btn" data-tag="人物特写">人物特写</span>
+                                <span class="tag-btn" data-tag="场景全景">场景全景</span>
+                                <span class="tag-btn" data-tag="细节特写">细节特写</span>
+                                <span class="tag-btn" data-tag="宣传海报">宣传海报</span>
+                            </div>
+                        </div>
+
+                        <!-- 适用场景 -->
+                        <div class="tag-category">
+                            <div class="category-title">适用场景</div>
+                            <div class="tag-grid" id="sceneTags">
+                                <span class="tag-btn" data-tag="展览展示">展览展示</span>
+                                <span class="tag-btn" data-tag="宣传教育">宣传教育</span>
+                                <span class="tag-btn" data-tag="学术研究">学术研究</span>
+                                <span class="tag-btn" data-tag="媒体报道">媒体报道</span>
+                                <span class="tag-btn" data-tag="档案保存">档案保存</span>
+                            </div>
+                        </div>
+
+                        <!-- 质量等级 -->
+                        <div class="tag-category">
+                            <div class="category-title">质量等级</div>
+                            <div class="tag-grid" id="qualityTags">
+                                <span class="tag-btn" data-tag="优质">优质</span>
+                                <span class="tag-btn" data-tag="良好">良好</span>
+                                <span class="tag-btn" data-tag="一般">一般</span>
+                                <span class="tag-btn" data-tag="待修复">待修复</span>
+                            </div>
+                        </div>
+
+                        <!-- 已选标签 -->
+                        <div class="selected-tags-section">
+                            <div class="selected-tags-title">
+                                已选标签
+                                <span class="count-badge" id="selectedCountBadge">0</span>
+                            </div>
+                            <div class="selected-tags-list" id="selectedTagsList">
+                                <div style="color:var(--text-tertiary); font-size:12px; padding:8px 0;">暂无选中标签，请点击上方标签选择</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="wb-footer">
+                <div class="wb-footer-btns">
+                    <button class="btn btn-default" onclick="prevImage()">← 上一张</button>
+                    <button class="btn btn-primary" onclick="confirmClassification()">确认分类 →</button>
+                    <button class="btn btn-default" onclick="skipImage()">跳过</button>
+                    <button class="btn btn-default" onclick="releaseTask()">释放任务</button>
+                </div>
+                <div class="progress-info">
+                    标注进度：<strong id="currentProgress">1</strong>/<span id="totalProgress">36</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 当前选中的标签
+        let selectedTags = [];
+        let currentIndex = 1;
+        let totalCount = 36;
+        
+        // 模拟图片数据
+        const images = [
+            { id: 1, name: '广府庙会 · 醒狮表演', author: '李华', source: '广东省文化馆', date: '2024-02-24' },
+            { id: 2, name: '粤剧《帝女花》演出剧照', author: '张明', source: '广东省文化馆', date: '2024-03-10' },
+            { id: 3, name: '非遗传承人现场展示广彩技艺', author: '王芳', source: '广东省文化馆', date: '2024-01-15' }
+        ];
+        
+        // 获取当前图片信息
+        function getCurrentImage() {
+            return images[0];
+        }
+        
+        // 绘制示例图片（业务相关的占位图）
+        function drawSampleImage() {
+            const canvas = document.getElementById('imageCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+            
+            // 背景渐变
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(1, '#16213e');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            // 绘制醒狮图案
+            ctx.fillStyle = '#FF8C00';
+            ctx.beginPath();
+            ctx.ellipse(width/2, height/2 - 20, 50, 45, 0, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.ellipse(width/2 - 15, height/2 - 30, 12, 10, 0, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(width/2 + 15, height/2 - 30, 12, 10, 0, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(width/2 - 15, height/2 - 28, 4, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(width/2 + 15, height/2 - 28, 4, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#DC143C';
+            ctx.fillRect(width/2 - 30, height/2 + 10, 60, 20);
+            
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 16px "PingFang SC"';
+            ctx.textAlign = 'center';
+            ctx.fillText('醒狮', width/2, height/2 + 28);
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px "PingFang SC"';
+            ctx.fillText('广府庙会 · 非遗展演', width/2, height - 30);
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.font = '11px "PingFang SC"';
+            ctx.fillText('广东省文化馆', width/2, height - 12);
+        }
+        
+        // 更新已选标签显示
+        function updateSelectedTagsDisplay() {
+            const container = document.getElementById('selectedTagsList');
+            const countBadge = document.getElementById('selectedCountBadge');
+            
+            if (selectedTags.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-tertiary); font-size:12px; padding:8px 0;">暂无选中标签，请点击上方标签选择</div>';
+                countBadge.textContent = '0';
+                return;
+            }
+            
+            container.innerHTML = selectedTags.map(tag => `
+                <div class="selected-tag">
+                    <span class="tag-name">${escapeHtml(tag)}</span>
+                    <span class="remove-tag" onclick="removeSelectedTagByName('${escapeHtml(tag)}')">✕</span>
+                </div>
+            `).join('');
+            countBadge.textContent = selectedTags.length;
+        }
+        
+        // 切换标签选中状态
+        function toggleTag(btn) {
+            const tagName = btn.getAttribute('data-tag');
+            if (btn.classList.contains('active')) {
+                btn.classList.remove('active');
+                selectedTags = selectedTags.filter(t => t !== tagName);
+            } else {
+                btn.classList.add('active');
+                selectedTags.push(tagName);
+            }
+            updateSelectedTagsDisplay();
+        }
+        
+        function removeSelectedTag(el) {
+            const tagName = el.closest('.selected-tag').querySelector('.tag-name').textContent;
+            removeSelectedTagByName(tagName);
+        }
+        
+        function removeSelectedTagByName(tagName) {
+            selectedTags = selectedTags.filter(t => t !== tagName);
+            const tagBtn = Array.from(document.querySelectorAll('.tag-btn')).find(btn => btn.getAttribute('data-tag') === tagName);
+            if (tagBtn) tagBtn.classList.remove('active');
+            updateSelectedTagsDisplay();
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 初始化标签按钮
+        function initTagButtons() {
+            document.querySelectorAll('.tag-btn').forEach(btn => {
+                const tagName = btn.getAttribute('data-tag');
+                if (selectedTags.includes(tagName)) {
+                    btn.classList.add('active');
+                }
+                btn.onclick = () => toggleTag(btn);
+            });
+        }
+        
+        // 更新计数和进度显示
+        function updateCounts() {
+            const count = selectedTags.length;
+            document.getElementById('classifiedCount').textContent = count;
+            document.getElementById('currentProgress').textContent = currentIndex;
+            document.getElementById('totalProgress').textContent = totalCount;
+        }
+        
+        // 更新图片信息
+        function updateImageInfo() {
+            const image = getCurrentImage();
+            document.querySelector('.image-title').textContent = image.name;
+            document.querySelector('.image-meta').innerHTML = `拍摄：${image.author} · 来源：${image.source} · 拍摄日期：${image.date}`;
+            drawSampleImage();
+        }
+        
+        function confirmClassification() {
+            if (selectedTags.length === 0) {
+                alert('请至少选择一个分类标签');
+                return;
+            }
+            const tagsText = selectedTags.join('、');
+            alert(`已保存分类：${tagsText}`);
+            // 模拟切换到下一张
+            if (currentIndex < totalCount) {
+                currentIndex++;
+                updateCounts();
+                // 重置标签选择
+                selectedTags = [];
+                document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
+                updateSelectedTagsDisplay();
+                updateImageInfo();
+                alert(`已切换到第 ${currentIndex} 张图片`);
+            } else {
+                alert('已完成所有图片分类！');
+            }
+        }
+        
+        function prevImage() { 
+            if (currentIndex > 1) {
+                currentIndex--;
+                updateCounts();
+                selectedTags = [];
+                document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
+                updateSelectedTagsDisplay();
+                updateImageInfo();
+                alert(`切换到第 ${currentIndex} 张图片`);
+            } else {
+                alert('已是第一张图片');
+            }
+        }
+        
+        function skipImage() { 
+            if (currentIndex < totalCount) {
+                currentIndex++;
+                updateCounts();
+                selectedTags = [];
+                document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
+                updateSelectedTagsDisplay();
+                updateImageInfo();
+                alert(`跳过当前图片，切换到第 ${currentIndex} 张`);
+            } else {
+                alert('已是最后一张图片');
+            }
+        }
+        
+        function releaseTask() { alert('任务已释放'); }
+        function saveAll() { 
+            alert(`已提交 ${selectedTags.length} 个分类标签`); 
+        }
+        
+        function toggleSubmenu(el, subId) {
+            event.stopPropagation();
+            const subList = document.getElementById(subId);
+            const navItem = el.closest('.nav-item');
+            if (subList.style.maxHeight && subList.style.maxHeight !== '0px') {
+                subList.style.maxHeight = '0';
+                navItem.classList.remove('open');
+            } else {
+                subList.style.maxHeight = subList.scrollHeight + 'px';
+                navItem.classList.add('open');
+            }
+        }
+        
+        window.addEventListener('resize', () => {
+            drawSampleImage();
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initTagButtons();
+            updateSelectedTagsDisplay();
+            updateCounts();
+            drawSampleImage();
+        });
+    </script>
+</body>
+</html>

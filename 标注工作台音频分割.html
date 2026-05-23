@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频分割 - 独立标注工作台</title>
+    <style>
+        :root {
+            --primary: #1677ff;
+            --primary-hover: #4096ff;
+            --primary-light: #e6f4ff;
+            --success: #52c41a;
+            --success-light: #f6ffed;
+            --warning: #faad14;
+            --warning-light: #fff7e6;
+            --error: #ff4d4f;
+            --text: #262626;
+            --text-secondary: #595959;
+            --text-tertiary: #8c8c8c;
+            --border: #d9d9d9;
+            --border-light: #f0f0f0;
+            --bg: #fafafa;
+            --bg-white: #ffffff;
+            --radius: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Left Sidebar */
+        .sidebar { width: 200px; background: #1a1a2e; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; }
+        .sidebar-logo { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 14px; color: #fff; font-weight: 600; }
+        .sidebar-logo span { font-size: 11px; color: var(--primary); display: block; margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; padding: 10px 16px; color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; transition: all 0.2s; gap: 8px; user-select: none; border-right: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.has-sub { justify-content: flex-start; }
+        .nav-item.has-sub.open { background: rgba(74,158,255,0.15); color: var(--primary); border-right-color: var(--primary); }
+        .nav-item .icon { width: 18px; text-align: center; font-size: 12px; color: #8c8c8c; flex-shrink: 0; }
+        .nav-item .text { flex: 1; }
+        .nav-item .arrow { font-size: 10px; color: rgba(255,255,255,0.4); transition: transform 0.2s; }
+        .nav-item.has-sub.open .arrow { transform: rotate(90deg); }
+        .nav-sub-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgba(0,0,0,0.15); }
+        .nav-sub-item { display: flex; align-items: center; padding: 8px 16px 8px 42px; color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; transition: all 0.2s; gap: 8px; }
+        .nav-sub-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-sub-item.active { color: var(--primary); }
+        .nav-sub-item .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+        .nav-sub-item.active .dot { background: var(--primary); }
+        .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; }
+        .user-name { font-size: 12px; color: rgba(255,255,255,0.8); }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+        /* Main area */
+        .main { margin-left: 200px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* Topbar */
+        .topbar {
+            height: 48px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-tertiary); }
+        .topbar-breadcrumb span { color: var(--text); }
+        .topbar-actions { display: flex; gap: 12px; }
+
+        /* Button */
+        .btn { height: 32px; padding: 0 14px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; font-weight: 500; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-default { background: var(--bg-white); border: 1px solid var(--border); color: var(--text); }
+        .btn-default:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Workbench */
+        .workbench {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 12px 24px;
+            background: #f0f2f5;
+            max-height: 1000px;
+            height: 1000px;
+        }
+
+        /* Workbench Header */
+        .wb-header {
+            background: var(--bg-white);
+            border-radius: var(--radius) var(--radius) 0 0;
+            border: 1px solid var(--border-light);
+            border-bottom: none;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wb-header-left .wb-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .wb-header-left .wb-meta { font-size: 12px; color: var(--text-tertiary); display: flex; gap: 16px; }
+        .wb-header-right { display: flex; gap: 10px; align-items: center; }
+
+        .divider-1, .divider-2 { height: 1px; background: var(--border-light); }
+
+        .wb-nav {
+            background: var(--bg-white);
+            border-left: 1px solid var(--border-light);
+            border-right: 1px solid var(--border-light);
+            padding: 0 20px;
+            display: flex;
+            gap: 24px;
+        }
+        .wb-nav-item {
+            padding: 10px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+        .wb-nav-item:hover { color: var(--text); }
+        .wb-nav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        .wb-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            min-height: 0;
+        }
+        
+        .wb-sidebar {
+            width: 320px;
+            border-left: 1px solid var(--border-light);
+            overflow-y: auto;
+            background: var(--bg-white);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .wb-sidebar-section {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .wb-sidebar-section:last-child { border-bottom: none; }
+        .wb-sidebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .wb-sidebar-title .count-badge {
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .wb-sidebar-item { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12px; }
+        .wb-sidebar-item .label { color: var(--text-tertiary); }
+        .wb-sidebar-item .value { color: var(--text); font-weight: 500; }
+        .wb-sidebar-item .value.green { color: var(--success); }
+        .wb-sidebar-item .value.yellow { color: var(--warning); }
+
+        .progress-bar { height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #69c0ff); border-radius: 3px; }
+        .progress-text { font-size: 11px; color: var(--text-tertiary); margin-top: 6px; text-align: center; }
+
+        .wb-footer {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+        .wb-footer-btns { display: flex; gap: 10px; }
+        .wb-page-info { font-size: 12px; color: var(--text-tertiary); }
+
+        /* ========== Audio Segmentation Styles ========== */
+        .waveform-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .waveform-main {
+            padding: 10px 20px 6px 20px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .waveform-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        
+        .waveform-canvas-wrapper {
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            position: relative;
+            height: 60px;
+            min-height: 60px;
+            overflow: hidden;
+            cursor: crosshair;
+            user-select: none;
+        }
+        .waveform-canvas { width: 100%; height: 100%; display: block; }
+        
+        .selection-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+        .selection-rect {
+            position: absolute;
+            background: rgba(22, 119, 255, 0.15);
+            border: 1px solid var(--primary);
+            border-radius: 2px;
+            pointer-events: none;
+            display: none;
+        }
+        .segment-highlight {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background: rgba(82, 196, 26, 0.2);
+            border-left: 2px solid var(--success);
+            border-right: 2px solid var(--success);
+            pointer-events: none;
+        }
+        .playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--primary);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .time-axis {
+            height: 22px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+            font-size: 10px;
+            color: var(--text-tertiary);
+            font-variant-numeric: tabular-nums;
+            background: var(--bg-white);
+            margin-top: 4px;
+        }
+
+        /* 音频识别区域 */
+        .recognition-bar {
+            padding: 14px 20px;
+            margin: 8px 0 4px 0;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            background: var(--bg-white);
+            flex-shrink: 0;
+        }
+        .switch-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            padding-top: 4px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.2s;
+            border-radius: 22px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.2s;
+            border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .recognition-textbox {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .recognition-textbox textarea {
+            width: 100%;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            font-size: 12px;
+            font-family: inherit;
+            resize: vertical;
+            background: var(--bg-white);
+            color: var(--text);
+            min-height: 68px;
+            line-height: 1.5;
+            transition: all 0.2s;
+        }
+        .recognition-textbox textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+        .recognition-textbox textarea:disabled {
+            background: var(--bg);
+            color: var(--text-tertiary);
+            cursor: not-allowed;
+        }
+        .recognition-hint {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .recognition-hint .dot {
+            width: 4px;
+            height: 4px;
+            background: var(--success);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .playback-controls {
+            padding: 10px 20px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg-white);
+            flex-shrink: 0;
+        }
+        .play-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .play-btn:hover { background: var(--primary-hover); transform: scale(1.02); }
+        .play-btn.playing { background: var(--warning); }
+        .playback-info { display: flex; flex-direction: column; gap: 2px; }
+        .playback-time { font-size: 12px; color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
+        .playback-duration { font-size: 10px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+        
+        .speed-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            background: var(--bg);
+            padding: 2px 6px;
+            border-radius: 16px;
+        }
+        .speed-group span { font-size: 11px; color: var(--text-tertiary); }
+        .speed-btn {
+            padding: 2px 8px;
+            border: none;
+            border-radius: 14px;
+            background: transparent;
+            font-size: 11px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .speed-btn:hover { background: var(--border-light); color: var(--text); }
+        .speed-btn.active { background: var(--primary-light); color: var(--primary); font-weight: 500; }
+
+        .segment-toolbar {
+            padding: 10px 20px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: var(--bg-white);
+            flex-shrink: 0;
+        }
+        .segment-toolbar-label { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
+        .tag-btn {
+            padding: 5px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-white);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tag-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+        .tag-btn.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 500; box-shadow: var(--shadow-sm); }
+        .tag-btn-green.active { background: var(--success-light); border-color: var(--success); color: var(--success); }
+        .tag-btn-purple.active { background: rgba(114,46,209,0.12); border-color: #722ed1; color: #722ed1; }
+        .tag-btn-orange.active { background: var(--warning-light); border-color: var(--warning); color: var(--warning); }
+        .tag-btn-red.active { background: rgba(255,77,79,0.12); border-color: var(--error); color: var(--error); }
+        
+        .current-segment-info {
+            margin-left: auto;
+            font-size: 10px;
+            color: var(--text-tertiary);
+            background: var(--bg);
+            padding: 4px 12px;
+            border-radius: 16px;
+        }
+
+        /* ========== 片段列表 - 优化层次感，添加浅色背景 ========== */
+        .segment-list { display: flex; flex-direction: column; gap: 12px; }
+        .segment-item {
+            padding: 12px 14px;
+            background: #f9fafb;  /* 浅浅的灰蓝色背景 */
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .segment-item:hover {
+            border-color: var(--primary);
+            background: var(--bg-white);
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-1px);
+        }
+        .segment-item.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+        }
+        .segment-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .segment-time {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 2px 8px;
+            border-radius: 14px;
+        }
+        .segment-item.active .segment-time {
+            background: rgba(22,119,255,0.1);
+        }
+        .segment-duration {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            background: rgba(0, 0, 0, 0.04);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .segment-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+        .segment-tag {
+            padding: 2px 10px;
+            border-radius: 14px;
+            font-size: 10px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .segment-tag-blue { background: rgba(22,119,255,0.12); color: #1677ff; }
+        .segment-tag-green { background: rgba(82,196,26,0.12); color: #52c41a; }
+        .segment-tag-purple { background: rgba(114,46,209,0.12); color: #722ed1; }
+        .segment-tag-orange { background: rgba(250,173,20,0.12); color: #faad14; }
+        .segment-tag-red { background: rgba(255,77,79,0.12); color: #ff4d4f; }
+        
+        /* 片段文本预览区域 */
+        .segment-text-preview {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.4;
+        }
+        .segment-text-preview .preview-icon {
+            color: var(--primary);
+            flex-shrink: 0;
+            font-size: 11px;
+        }
+        .segment-text-preview .preview-content {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        .segment-item.active .segment-text-preview {
+            border-top-color: rgba(22,119,255,0.15);
+        }
+        
+        .delete-segment {
+            color: var(--text-tertiary);
+            cursor: pointer;
+            font-size: 13px;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .delete-segment:hover {
+            color: var(--error);
+            background: rgba(255,77,79,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>数据集管理平台</h1>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+    </div>
+</div>
+<div class="main">
+        <div class="topbar">
+            <div class="topbar-breadcrumb">
+                <span>标注中心</span><span>›</span><span>标注任务</span><span>›</span>
+                <span>音频-音频分割</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-default" onclick="history.back()">返回列表</button>
+                <button class="btn btn-primary">提交全部</button>
+            </div>
+        </div>
+
+        <div class="workbench">
+            <div class="wb-header">
+                <div class="wb-header-left">
+                    <div class="wb-title">音频分割 · 粤剧音频数据集</div>
+                    <div class="wb-meta">
+                        <span>任务ID：TASK-AUDIO-003</span>
+                        <span>模板：音频分割模板</span>
+                        <span>已分割：<span id="segmentCount">3</span>/60</span>
+                    </div>
+                </div>
+                <div class="wb-header-right">
+                    <div style="font-size:12px;color:var(--text-secondary);">
+                        标注员：<span style="color:var(--text);font-weight:500;">张三</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider-1"></div>
+
+            <div class="wb-nav">
+                <div class="wb-nav-item active">待分割 (15)</div>
+                <div class="wb-nav-item">已分割 (45)</div>
+                <div class="wb-nav-item">全部数据 (60)</div>
+            </div>
+
+            <div class="divider-2"></div>
+
+            <div class="wb-body">
+                <div class="waveform-area">
+                    <div class="waveform-main">
+                        <div class="waveform-title">音频波形</div>
+                        <div class="waveform-canvas-wrapper" id="waveformWrapper">
+                            <canvas id="waveformCanvas" class="waveform-canvas" width="800" height="60"></canvas>
+                            <div class="selection-overlay">
+                                <div class="selection-rect" id="selectionRect"></div>
+                                <div id="segmentHighlights"></div>
+                                <div class="playhead" id="playhead" style="left: 0%;"></div>
+                            </div>
+                        </div>
+                        <div class="time-axis">
+                            <span>0:00</span><span>1:00</span><span>2:00</span><span>3:00</span><span>4:00</span><span>5:00</span><span>6:00</span><span>7:00</span><span>7:35</span>
+                        </div>
+                    </div>
+
+                    <div class="recognition-bar">
+                        <label class="switch-label">
+                            <span style="font-size:13px; font-weight:500;">🎤 音频识别</span>
+                            <div class="switch">
+                                <input type="checkbox" id="recognitionSwitch" onchange="toggleRecognition(this.checked)">
+                                <span class="slider"></span>
+                            </div>
+                        </label>
+                        <div class="recognition-textbox" style="flex:1; display:none;" id="recognitionBox">
+                            <textarea id="recognitionText" rows="2" placeholder="开启音频识别后，划选音频区域将自动识别文本内容，可编辑修改..."></textarea>
+                            <div class="recognition-hint">
+                                <span class="dot"></span>
+                                <span>识别内容可编辑，保存后将关联至当前片段</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="playback-controls">
+                        <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+                        <div class="playback-info">
+                            <div class="playback-time" id="selectedTimeInfo">未选中区域</div>
+                            <div class="playback-duration" id="playbackDuration">00:00 / 07:35</div>
+                        </div>
+                        <div class="speed-group">
+                            <span>倍速</span>
+                            <button class="speed-btn" onclick="setSpeed(0.5)">0.5x</button>
+                            <button class="speed-btn active" onclick="setSpeed(1.0)">1.0x</button>
+                            <button class="speed-btn" onclick="setSpeed(1.5)">1.5x</button>
+                            <button class="speed-btn" onclick="setSpeed(2.0)">2.0x</button>
+                        </div>
+                    </div>
+
+                    <div class="segment-toolbar">
+                        <span class="segment-toolbar-label">为选中区域添加标签：</span>
+                        <button class="tag-btn tag-btn-blue" onclick="setActiveTag(this, '粤剧', 'blue')">粤剧</button>
+                        <button class="tag-btn tag-btn-green" onclick="setActiveTag(this, '非遗', 'green')">非遗</button>
+                        <button class="tag-btn tag-btn-red" onclick="setActiveTag(this, '演唱', 'red')">演唱</button>
+                        <button class="tag-btn tag-btn-purple" onclick="setActiveTag(this, '伴奏', 'purple')">伴奏</button>
+                        <button class="tag-btn tag-btn-orange" onclick="setActiveTag(this, '念白', 'orange')">念白</button>
+                        <span class="current-segment-info" id="currentSelectionInfo">请在波形上拖拽选择区域</span>
+                    </div>
+                </div>
+
+                <div class="wb-sidebar">
+                    <div class="wb-sidebar-section">
+                        <div class="wb-sidebar-title">
+                            已标记片段
+                            <span class="count-badge" id="segmentCountBadge">3</span>
+                        </div>
+                        <div class="segment-list" id="segmentList"></div>
+                    </div>
+
+                    <div class="wb-sidebar-section">
+                        <div class="wb-sidebar-title">标注进度</div>
+                        <div class="wb-sidebar-item"><span class="label">总音频数</span><span class="value">60</span></div>
+                        <div class="wb-sidebar-item"><span class="label">已分割</span><span class="value green" id="sidebarSegmentCount">3</span></div>
+                        <div class="wb-sidebar-item"><span class="label">待分割</span><span class="value yellow">15</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 75%;"></div></div>
+                        <div class="progress-text">整体进度 75%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wb-footer">
+                <div class="wb-footer-btns">
+                    <button class="btn btn-default" onclick="prevAudio()">上一条</button>
+                    <button class="btn btn-primary" onclick="confirmSegments()">确认分割</button>
+                    <button class="btn btn-default" onclick="skipAudio()">跳过</button>
+                    <button class="btn btn-default" onclick="releaseTask()">释放任务</button>
+                </div>
+                <div class="wb-page-info">第 1/15 条 · 待分割</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const totalDuration = 455;
+        let selectionStart = null;
+        let selectionEnd = null;
+        let isDragging = false;
+        let activeTag = { name: '粤剧', color: 'blue' };
+        let recognitionEnabled = false;
+        
+        const mockRecognitionResults = {
+            '00:04-00:11': '张先生反映培训课程时间安排不合理，希望调整至周末。',
+            '00:12-00:28': '经馆方研究决定，自下月起全面实行周末开放制度，以满足群众需求。',
+            '00:32-00:41': '建议在越秀区文化中心增设夜间开放时段，服务更多上班族。',
+            '01:05-01:22': '广东省文化馆组织的粤剧进社区活动深受社区居民喜爱。'
+        };
+        
+        function simulateRecognition(startPercent, endPercent) {
+            const startTime = percentToTime(startPercent);
+            const endTime = percentToTime(endPercent);
+            const key = `${startTime}-${endTime}`;
+            for (const [range, text] of Object.entries(mockRecognitionResults)) {
+                if (key === range) return text;
+            }
+            return `[音频片段] 这是 ${startTime} - ${endTime} 的自动识别文本内容，您可以进行编辑修改。`;
+        }
+        
+        let segments = [
+            { id: 'seg_1', startPercent: 5.5, endPercent: 12.0, startTime: '00:04', endTime: '00:11', duration: 7, tags: ['粤剧', '非遗'], text: '张先生反映培训课程时间安排不合理，希望调整至周末。' },
+            { id: 'seg_2', startPercent: 16.5, endPercent: 23.5, startTime: '00:12', endTime: '00:28', duration: 16, tags: ['伴奏'], text: '经馆方研究决定，自下月起全面实行周末开放制度，以满足群众需求。' },
+            { id: 'seg_3', startPercent: 28.0, endPercent: 35.0, startTime: '00:32', endTime: '00:41', duration: 9, tags: ['演唱'], text: '建议在越秀区文化中心增设夜间开放时段，服务更多上班族。' }
+        ];
+        
+        let nextSegmentId = 4;
+        let canvas, ctx;
+        
+        function percentToTime(percent) {
+            const seconds = (percent / 100) * totalDuration;
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function percentToSeconds(percent) {
+            return (percent / 100) * totalDuration;
+        }
+        
+        function drawWaveform() {
+            if (!canvas || !ctx) return;
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+            
+            const barCount = Math.min(100, Math.floor(width / 5));
+            const barWidth = width / barCount;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            for (let i = 0; i < barCount; i++) {
+                const x = i * barWidth;
+                const barHeight = 8 + Math.random() * 28;
+                const percent = i / barCount * 100;
+                
+                let color = 'rgba(22, 119, 255, 0.35)';
+                for (const seg of segments) {
+                    if (percent >= seg.startPercent && percent <= seg.endPercent) {
+                        color = 'rgba(82, 196, 26, 0.5)';
+                        break;
+                    }
+                }
+                ctx.fillStyle = color;
+                ctx.fillRect(x, height - barHeight, Math.max(2, barWidth - 1), barHeight);
+            }
+            
+            for (const seg of segments) {
+                const x1 = (seg.startPercent / 100) * width;
+                const x2 = (seg.endPercent / 100) * width;
+                ctx.beginPath();
+                ctx.strokeStyle = '#52c41a';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.moveTo(x1, 0);
+                ctx.lineTo(x1, height);
+                ctx.stroke();
+                ctx.moveTo(x2, 0);
+                ctx.lineTo(x2, height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+        
+        function renderSegmentHighlights() {
+            const container = document.getElementById('segmentHighlights');
+            if (!container) return;
+            let html = '';
+            for (const seg of segments) {
+                html += `<div class="segment-highlight" style="left: ${seg.startPercent}%; width: ${seg.endPercent - seg.startPercent}%;"></div>`;
+            }
+            container.innerHTML = html;
+        }
+        
+        function renderSegmentList() {
+            const container = document.getElementById('segmentList');
+            if (!container) return;
+            if (segments.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-tertiary);font-size:12px;padding:20px;text-align:center;">暂无标记片段<br><span style="font-size:11px;">在波形上拖拽选择区域后点击标签添加</span></div>';
+                return;
+            }
+            container.innerHTML = segments.map(seg => `
+                <div class="segment-item" onclick="selectSegment('${seg.id}')">
+                    <div class="segment-item-header">
+                        <span class="segment-time">${seg.startTime} — ${seg.endTime}</span>
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <span class="segment-duration">${seg.duration}秒</span>
+                            <span class="delete-segment" onclick="event.stopPropagation(); deleteSegment('${seg.id}')" title="删除片段">✕</span>
+                        </span>
+                    </div>
+                    <div class="segment-tags">
+                        ${seg.tags.map(tag => {
+                            let colorClass = '';
+                            if (tag === '粤剧') colorClass = 'segment-tag-blue';
+                            else if (tag === '非遗') colorClass = 'segment-tag-green';
+                            else if (tag === '演唱') colorClass = 'segment-tag-red';
+                            else if (tag === '伴奏') colorClass = 'segment-tag-purple';
+                            else if (tag === '念白') colorClass = 'segment-tag-orange';
+                            return `<span class="segment-tag ${colorClass}">${tag}</span>`;
+                        }).join('')}
+                    </div>
+                    ${recognitionEnabled && seg.text ? `
+                        <div class="segment-text-preview">
+                            <span class="preview-icon">📝</span>
+                            <span class="preview-content" title="${seg.text.replace(/"/g, '"')}">${seg.text.length > 80 ? seg.text.substring(0, 80) + '...' : seg.text}</span>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+            document.getElementById('segmentCount').textContent = segments.length;
+            document.getElementById('sidebarSegmentCount').textContent = segments.length;
+            document.getElementById('segmentCountBadge').textContent = segments.length;
+        }
+        
+        function addSegment(startPercent, endPercent, tags) {
+            if (startPercent === null || endPercent === null || Math.abs(startPercent - endPercent) < 0.5) return false;
+            const start = Math.min(startPercent, endPercent);
+            const end = Math.max(startPercent, endPercent);
+            const startTime = percentToTime(start);
+            const endTime = percentToTime(end);
+            
+            let recognizedText = '';
+            if (recognitionEnabled) {
+                recognizedText = simulateRecognition(start, end);
+                const textarea = document.getElementById('recognitionText');
+                if (textarea) textarea.value = recognizedText;
+            }
+            
+            const newSegment = {
+                id: `seg_${nextSegmentId++}`,
+                startPercent: start, endPercent: end,
+                startTime: startTime, endTime: endTime,
+                duration: Math.round(percentToSeconds(end) - percentToSeconds(start)),
+                tags: [...tags],
+                text: recognizedText
+            };
+            segments.push(newSegment);
+            renderSegmentList();
+            drawWaveform();
+            renderSegmentHighlights();
+            
+            selectionStart = null;
+            selectionEnd = null;
+            updateSelectionUI();
+            document.getElementById('selectedTimeInfo').innerHTML = '未选中区域';
+            document.getElementById('currentSelectionInfo').innerHTML = '请在波形上拖拽选择区域';
+            if (recognitionEnabled) {
+                document.getElementById('recognitionText').value = '';
+            }
+            return true;
+        }
+        
+        function deleteSegment(segmentId) {
+            segments = segments.filter(s => s.id !== segmentId);
+            renderSegmentList();
+            drawWaveform();
+            renderSegmentHighlights();
+        }
+        
+        function selectSegment(segmentId) {
+            const seg = segments.find(s => s.id === segmentId);
+            if (seg) {
+                selectionStart = seg.startPercent;
+                selectionEnd = seg.endPercent;
+                updateSelectionUI();
+                document.getElementById('selectedTimeInfo').innerHTML = `${seg.startTime} — ${seg.endTime} <span style="font-size:10px;">（已选中）</span>`;
+                document.getElementById('currentSelectionInfo').innerHTML = `已选中: ${seg.startTime} - ${seg.endTime}`;
+                if (recognitionEnabled && seg.text) {
+                    document.getElementById('recognitionText').value = seg.text;
+                }
+            }
+        }
+        
+        function setActiveTag(btn, tagName) {
+            document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeTag = { name: tagName };
+            if (selectionStart !== null && selectionEnd !== null && Math.abs(selectionStart - selectionEnd) > 0.5) {
+                addSegment(selectionStart, selectionEnd, [tagName]);
+            }
+        }
+        
+        function updateSelectionUI() {
+            const rect = document.getElementById('selectionRect');
+            if (selectionStart !== null && selectionEnd !== null && Math.abs(selectionStart - selectionEnd) > 0.5) {
+                const left = Math.min(selectionStart, selectionEnd);
+                const width = Math.abs(selectionEnd - selectionStart);
+                rect.style.display = 'block';
+                rect.style.left = `${left}%`;
+                rect.style.width = `${width}%`;
+            } else {
+                rect.style.display = 'none';
+            }
+        }
+        
+        function toggleRecognition(enabled) {
+            recognitionEnabled = enabled;
+            const recognitionBox = document.getElementById('recognitionBox');
+            const textarea = document.getElementById('recognitionText');
+            if (enabled) {
+                recognitionBox.style.display = 'flex';
+                if (selectionStart !== null && selectionEnd !== null && Math.abs(selectionStart - selectionEnd) > 0.5) {
+                    const text = simulateRecognition(selectionStart, selectionEnd);
+                    textarea.value = text;
+                } else {
+                    textarea.value = '';
+                }
+            } else {
+                recognitionBox.style.display = 'none';
+                textarea.value = '';
+            }
+            renderSegmentList();
+        }
+        
+        function initMouseSelection() {
+            const wrapper = document.getElementById('waveformWrapper');
+            wrapper.addEventListener('mousedown', (e) => {
+                const rect = wrapper.getBoundingClientRect();
+                const percent = ((e.clientX - rect.left) / rect.width) * 100;
+                selectionStart = Math.max(0, Math.min(100, percent));
+                selectionEnd = selectionStart;
+                isDragging = true;
+                updateSelectionUI();
+                const time = percentToTime(selectionStart);
+                document.getElementById('selectedTimeInfo').innerHTML = `${time} — ${time}`;
+                document.getElementById('currentSelectionInfo').innerHTML = `起始点: ${time}`;
+                if (recognitionEnabled) {
+                    document.getElementById('recognitionText').value = '';
+                }
+            });
+            
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const rect = wrapper.getBoundingClientRect();
+                let x = e.clientX - rect.left;
+                if (x < 0) x = 0;
+                if (x > rect.width) x = rect.width;
+                const percent = (x / rect.width) * 100;
+                selectionEnd = Math.max(0, Math.min(100, percent));
+                updateSelectionUI();
+                const startTime = percentToTime(selectionStart);
+                const endTime = percentToTime(selectionEnd);
+                document.getElementById('selectedTimeInfo').innerHTML = `${startTime} — ${endTime}`;
+                document.getElementById('currentSelectionInfo').innerHTML = `已选择: ${startTime} - ${endTime}`;
+            });
+            
+            window.addEventListener('mouseup', () => {
+                if (isDragging && selectionStart !== null && selectionEnd !== null && Math.abs(selectionStart - selectionEnd) > 0.5 && recognitionEnabled) {
+                    const text = simulateRecognition(selectionStart, selectionEnd);
+                    document.getElementById('recognitionText').value = text;
+                }
+                isDragging = false;
+            });
+        }
+        
+        let isPlaying = false;
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = isPlaying ? '⏸' : '▶';
+            btn.classList.toggle('playing', isPlaying);
+        }
+        
+        let currentSpeed = 1.0;
+        function setSpeed(speed) {
+            currentSpeed = speed;
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === `${speed}x`) btn.classList.add('active');
+            });
+        }
+        
+        function prevAudio() { alert('上一条'); }
+        function skipAudio() { alert('跳过'); }
+        function releaseTask() { alert('释放任务'); }
+        function confirmSegments() {
+            alert(`已保存 ${segments.length} 个音频片段标记`);
+        }
+        
+        function toggleSubmenu(el, subId) {
+            event.stopPropagation();
+            const subList = document.getElementById(subId);
+            const navItem = el.closest('.nav-item');
+            if (subList.style.maxHeight && subList.style.maxHeight !== '0px') {
+                subList.style.maxHeight = '0';
+                navItem.classList.remove('open');
+            } else {
+                subList.style.maxHeight = subList.scrollHeight + 'px';
+                navItem.classList.add('open');
+            }
+        }
+        
+        window.addEventListener('resize', () => {
+            drawWaveform();
+            renderSegmentHighlights();
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            canvas = document.getElementById('waveformCanvas');
+            ctx = canvas.getContext('2d');
+            setTimeout(() => {
+                drawWaveform();
+                renderSegmentList();
+                renderSegmentHighlights();
+            }, 100);
+            initMouseSelection();
+            const defaultBtn = document.querySelector('.tag-btn-blue');
+            if (defaultBtn) defaultBtn.classList.add('active');
+        });
+    </script>
+</body>
+</html>

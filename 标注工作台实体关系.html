@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实体关系标注 - 广东省文化馆</title>
+    <style>
+        :root {
+            --primary: #1677ff;
+            --primary-hover: #4096ff;
+            --primary-light: #e6f4ff;
+            --success: #52c41a;
+            --success-light: #f6ffed;
+            --warning: #faad14;
+            --warning-light: #fff7e6;
+            --error: #ff4d4f;
+            --text: #262626;
+            --text-secondary: #595959;
+            --text-tertiary: #8c8c8c;
+            --border: #d9d9d9;
+            --border-light: #f0f0f0;
+            --bg: #fafafa;
+            --bg-white: #ffffff;
+            --radius: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Left Sidebar */
+        .sidebar { width: 200px; background: #1a1a2e; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; z-index: 10; }
+        .sidebar-logo { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 14px; color: #fff; font-weight: 600; }
+        .sidebar-logo span { font-size: 11px; color: var(--primary); display: block; margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; padding: 10px 16px; color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; transition: all 0.2s; gap: 8px; user-select: none; border-right: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.has-sub { justify-content: flex-start; }
+        .nav-item.has-sub.open { background: rgba(74,158,255,0.15); color: var(--primary); border-right-color: var(--primary); }
+        .nav-item .icon { width: 18px; text-align: center; font-size: 12px; color: #8c8c8c; flex-shrink: 0; }
+        .nav-item .text { flex: 1; }
+        .nav-item .arrow { font-size: 10px; color: rgba(255,255,255,0.4); transition: transform 0.2s; }
+        .nav-item.has-sub.open .arrow { transform: rotate(90deg); }
+        .nav-sub-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgba(0,0,0,0.15); }
+        .nav-sub-item { display: flex; align-items: center; padding: 8px 16px 8px 42px; color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; transition: all 0.2s; gap: 8px; }
+        .nav-sub-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-sub-item.active { color: var(--primary); }
+        .nav-sub-item .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+        .nav-sub-item.active .dot { background: var(--primary); }
+        .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; }
+        .user-name { font-size: 12px; color: rgba(255,255,255,0.8); }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+        /* Main area */
+        .main { margin-left: 200px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* Topbar */
+        .topbar {
+            height: 48px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-tertiary); }
+        .topbar-breadcrumb span { color: var(--text); }
+        .topbar-actions { display: flex; gap: 12px; }
+
+        /* Button */
+        .btn { height: 32px; padding: 0 14px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; font-weight: 500; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-default { background: var(--bg-white); border: 1px solid var(--border); color: var(--text); }
+        .btn-default:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Workbench */
+        .workbench {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 12px 24px;
+            background: #f0f2f5;
+            max-height: 1000px;
+            height: 1000px;
+        }
+
+        .wb-header {
+            background: var(--bg-white);
+            border-radius: var(--radius) var(--radius) 0 0;
+            border: 1px solid var(--border-light);
+            border-bottom: none;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wb-header-left .wb-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .wb-header-left .wb-meta { font-size: 12px; color: var(--text-tertiary); display: flex; gap: 16px; flex-wrap: wrap; }
+        .wb-header-right { display: flex; gap: 10px; align-items: center; }
+        .divider-1, .divider-2, .divider-3 { height: 1px; background: var(--border-light); }
+
+        /* 主体区域 */
+        .wb-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+        }
+
+        /* 文本内容区域 */
+        .doc-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .doc-content {
+            font-size: 14px;
+            line-height: 2;
+            color: var(--text);
+        }
+        .doc-paragraph {
+            margin-bottom: 12px;
+        }
+        
+        /* 实体高亮样式 - 标签在右上角 */
+        .entity-mark {
+            display: inline;
+            position: relative;
+            padding: 0 2px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .entity-mark:hover { opacity: 0.8; }
+        .entity-person { background: rgba(22,119,255,0.12); color: #1677ff; border-radius: 4px; }
+        .entity-work { background: rgba(255,77,79,0.12); color: #ff4d4f; border-radius: 4px; }
+        .entity-role { background: rgba(114,46,209,0.12); color: #722ed1; border-radius: 4px; }
+        .entity-time { background: rgba(250,173,20,0.12); color: #faad14; border-radius: 4px; }
+        
+        .entity-label {
+            position: absolute;
+            top: -10px;
+            right: -2px;
+            font-size: 9px;
+            padding: 0px 4px;
+            border-radius: 10px;
+            font-weight: normal;
+            white-space: nowrap;
+            transform: scale(0.85);
+            transform-origin: top right;
+        }
+        .entity-person .entity-label { background: #1677ff; color: #fff; }
+        .entity-work .entity-label { background: #ff4d4f; color: #fff; }
+        .entity-role .entity-label { background: #722ed1; color: #fff; }
+        .entity-time .entity-label { background: #faad14; color: #fff; }
+
+        /* 实体池区域 */
+        .entity-section {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .entity-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .entity-category {
+            flex: 1;
+            min-width: 180px;
+        }
+        .category-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .entity-item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .entity-annotation-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: #f9fafb;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .entity-annotation-item:hover { background: var(--bg-white); box-shadow: var(--shadow-sm); }
+        .entity-annotation-text {
+            font-weight: 500;
+            color: var(--text);
+        }
+        .entity-annotation-type {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .entity-person .entity-annotation-type { background: rgba(22,119,255,0.12); color: #1677ff; }
+        .entity-work .entity-annotation-type { background: rgba(255,77,79,0.12); color: #ff4d4f; }
+        .entity-role .entity-annotation-type { background: rgba(114,46,209,0.12); color: #722ed1; }
+        .entity-time .entity-annotation-type { background: rgba(250,173,20,0.12); color: #faad14; }
+
+        /* 关系标注区域 + 进度栏 */
+        .relation-wrapper {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+        .relation-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 12px 20px;
+        }
+        .relation-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .relation-tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .relation-tag {
+            padding: 4px 12px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-white);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .relation-tag:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+        .relation-tag.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 500; }
+        
+        .mode-hint {
+            margin-left: auto;
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+        .mode-hint.active {
+            background: var(--success-light);
+            color: var(--success);
+        }
+        
+        /* 可视化画板 */
+        .relation-canvas-container {
+            flex: 1;
+            position: relative;
+            background: #fafafa;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            min-height: 200px;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        .relation-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .canvas-status {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            font-size: 10px;
+            color: var(--text-tertiary);
+            background: rgba(255,255,255,0.8);
+            padding: 2px 8px;
+            border-radius: 12px;
+            pointer-events: none;
+        }
+        
+        /* 关系列表 */
+        .relation-list {
+            max-height: 130px;
+            overflow-y: auto;
+            border-top: 1px solid var(--border-light);
+            padding: 10px;
+            margin-top: 10px;
+            background: var(--bg-white);
+        }
+        .relation-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: #f9fafb;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+        .relation-card:last-child { margin-bottom: 0; }
+        .relation-card-content {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .subject-badge { background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 14px; font-size: 11px; font-weight: 500; }
+        .predicate-badge { background: var(--success-light); color: var(--success); padding: 2px 8px; border-radius: 14px; font-size: 11px; }
+        .object-badge { background: var(--warning-light); color: var(--warning); padding: 2px 8px; border-radius: 14px; font-size: 11px; font-weight: 500; }
+        .delete-relation {
+            color: var(--text-tertiary);
+            cursor: pointer;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        .delete-relation:hover { color: var(--error); background: rgba(255,77,79,0.1); }
+
+        /* 右侧进度栏 */
+        .progress-sidebar {
+            width: 240px;
+            border-left: 1px solid var(--border-light);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-white);
+        }
+        .progress-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .progress-item { display: flex; justify-content: space-between; padding: 8px 0; font-size: 12px; }
+        .progress-item .label { color: var(--text-tertiary); }
+        .progress-item .value { color: var(--text); font-weight: 500; }
+        .progress-item .value.green { color: var(--success); }
+        .progress-bar { height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; margin-top: 8px; margin-bottom: 12px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #69c0ff); border-radius: 3px; width: 43%; }
+
+        /* Footer */
+        .wb-footer {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-top: none;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+        .wb-footer-btns { display: flex; gap: 10px; }
+        .wb-page-info { font-size: 12px; color: var(--text-tertiary); }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>数据集管理平台</h1>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+    </div>
+</div>
+<div class="main">
+        <div class="topbar">
+            <div class="topbar-breadcrumb">
+                <span>广东省文化馆</span><span>›</span><span>数字资源标注</span><span>›</span>
+                <span>实体关系标注</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-default" onclick="history.back()">返回列表</button>
+                <button class="btn btn-primary" onclick="saveAll()">提交全部</button>
+            </div>
+        </div>
+
+        <div class="workbench">
+            <div class="wb-header">
+                <div class="wb-header-left">
+                    <div class="wb-title">粤剧知识图谱 · 实体关系标注</div>
+                    <div class="wb-meta">
+                        <span>任务ID：GDSG-KG-001</span>
+                        <span>实体数：<span id="entityCount">8</span></span>
+                        <span>关系数：<span id="relationTotalCount">6</span></span>
+                    </div>
+                </div>
+                <div class="wb-header-right">
+                    <div style="font-size:12px;color:var(--text-secondary);">标注员：李华</div>
+                </div>
+            </div>
+            <div class="divider-1"></div>
+
+            <div class="wb-body">
+                <!-- 1. 文本内容区域 -->
+                <div class="doc-section">
+                    <div class="section-title">📄 文本内容</div>
+                    <div class="doc-content">
+                        <div class="doc-paragraph">
+                            <span class="entity-mark entity-work" data-entity="帝女花">《帝女花》<span class="entity-label">作品</span></span>是粤剧经典剧目，由
+                            <span class="entity-mark entity-person" data-entity="唐涤生">唐涤生<span class="entity-label">人物</span></span>根据清代黄燮清传奇改编，1957年首演于香港。故事讲述明末崇祯年间，长平公主与周世显的爱情悲剧。
+                        </div>
+                        <div class="doc-paragraph">
+                            <span class="entity-mark entity-person" data-entity="任剑辉">任剑辉<span class="entity-label">人物</span></span>饰演周世显，
+                            <span class="entity-mark entity-person" data-entity="白雪仙">白雪仙<span class="entity-label">人物</span></span>饰演长平公主，二人被誉为
+                            <span class="entity-mark entity-person" data-entity="任白配">任白配<span class="entity-label">人物</span></span>，是粤剧史上最经典的搭档组合。
+                        </div>
+                        <div class="doc-paragraph">
+                            2006年，粤剧被列入第一批国家级非物质文化遗产名录，
+                            <span class="entity-mark entity-work" data-entity="帝女花">《帝女花》<span class="entity-label">作品</span></span>作为代表性剧目，在海内外广泛传演。
+                        </div>
+                    </div>
+                </div>
+                <div class="divider-2"></div>
+
+                <!-- 2. 实体标注区域 - 按标签展示已标注文本 -->
+                <div class="entity-section">
+                    <div class="section-title">🏷️ 已标注实体</div>
+                    <div class="entity-pool">
+                        <!-- 人物类 -->
+                        <div class="entity-category">
+                            <div class="category-title">👤 人物</div>
+                            <div class="entity-item-list">
+                                <div class="entity-annotation-item">
+                                    <span class="entity-annotation-text">任剑辉</span>
+                                    <span class="entity-annotation-type">人物</span>
+                                </div>
+                                <div class="entity-annotation-item">
+                                    <span class="entity-annotation-text">白雪仙</span>
+                                    <span class="entity-annotation-type">人物</span>
+                                </div>
+                                <div class="entity-annotation-item">
+                                    <span class="entity-annotation-text">唐涤生</span>
+                                    <span class="entity-annotation-type">人物</span>
+                                </div>
+                                <div class="entity-annotation-item">
+                                    <span class="entity-annotation-text">任白配</span>
+                                    <span class="entity-annotation-type">人物</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 作品类 -->
+                        <div class="entity-category">
+                            <div class="category-title">📖 作品</div>
+                            <div class="entity-item-list">
+                                <div class="entity-annotation-item">
+                                    <span class="entity-annotation-text">帝女花</span>
+                                    <span class="entity-annotation-type">作品</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 角色类 -->
+                        <div class="entity-category">
+                            <div class="category-title">🎭 角色</div>
+                            <div class="entity-item-list">
+                                <div class="entity-annotation-item">
+                                    <span class="entity-annotation-text">周世显</span>
+                                    <span class="entity-annotation-type">角色</span>
+                                </div>
+                                <div class="entity-annotation-item">
+                                    <span class="entity-annotation-text">长平公主</span>
+                                    <span class="entity-annotation-type">角色</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 时代类 -->
+                        <div class="entity-category">
+                            <div class="category-title">⏰ 时代</div>
+                            <div class="entity-item-list">
+                                <div class="entity-annotation-item">
+                                    <span class="entity-annotation-text">清</span>
+                                    <span class="entity-annotation-type">时代</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="divider-3"></div>
+
+                <!-- 3. 关系标注区域 + 右侧进度栏 -->
+                <div class="relation-wrapper">
+                    <div class="relation-section">
+                        <div class="relation-toolbar">
+                            <div class="relation-tag-group" id="relationTags">
+                                <span class="relation-tag active" data-rel="改编">改编</span>
+                                <span class="relation-tag" data-rel="创作">创作</span>
+                                <span class="relation-tag" data-rel="饰演">饰演</span>
+                                <span class="relation-tag" data-rel="搭档">搭档</span>
+                                <span class="relation-tag" data-rel="主演">主演</span>
+                                <span class="relation-tag" data-rel="编剧">编剧</span>
+                                <span class="relation-tag" data-rel="首演于">首演于</span>
+                                <span class="relation-tag" data-rel="属于">属于</span>
+                            </div>
+                            <div class="mode-hint" id="modeHint">💡 点击画板实体开始连线</div>
+                        </div>
+                        
+                        <div class="relation-canvas-container" id="relationCanvasContainer">
+                            <canvas id="relationCanvas" class="relation-canvas"></canvas>
+                            <div class="canvas-status" id="canvasStatus">等待连线</div>
+                        </div>
+                        
+                        <div class="relation-list" id="relationList"></div>
+                    </div>
+
+                    <!-- 右侧进度栏 -->
+                    <div class="progress-sidebar">
+                        <div class="progress-title">📊 标注进度</div>
+                        <div class="progress-item"><span class="label">总文档数</span><span class="value">14</span></div>
+                        <div class="progress-item"><span class="label">已标注</span><span class="value green">6</span></div>
+                        <div class="progress-item"><span class="label">待标注</span><span class="value yellow">8</span></div>
+                        <div class="progress-bar"><div class="progress-fill"></div></div>
+                        <div class="progress-item"><span class="label">已标注关系</span><span class="value" id="progressRelationCount">6</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wb-footer">
+                <div class="wb-footer-btns">
+                    <button class="btn btn-default" onclick="prevDoc()">← 上一篇</button>
+                    <button class="btn btn-primary" onclick="saveAll()">确认标注 →</button>
+                    <button class="btn btn-default" onclick="skipDoc()">跳过</button>
+                    <button class="btn btn-default" onclick="releaseTask()">释放任务</button>
+                </div>
+                <div class="wb-page-info">第 1/8 条 · 待标注</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 画板实体数据
+        const canvasEntities = [
+            { id: 'renjianhui', name: '任剑辉', type: 'person', x: 80, y: 50, color: '#1677ff' },
+            { id: 'baixuexian', name: '白雪仙', type: 'person', x: 200, y: 50, color: '#1677ff' },
+            { id: 'tangdisheng', name: '唐涤生', type: 'person', x: 40, y: 130, color: '#1677ff' },
+            { id: 'renbaipei', name: '任白配', type: 'person', x: 140, y: 20, color: '#1677ff' },
+            { id: 'dinyuhua', name: '帝女花', type: 'work', x: 330, y: 90, color: '#ff4d4f' },
+            { id: 'zhoushixian', name: '周世显', type: 'role', x: 280, y: 160, color: '#722ed1' },
+            { id: 'changping', name: '长平公主', type: 'role', x: 370, y: 170, color: '#722ed1' },
+            { id: 'qing', name: '清', type: 'time', x: 420, y: 30, color: '#faad14' }
+        ];
+        
+        // 关系数据
+        let relations = [
+            { id: 1, subject: '唐涤生', predicate: '改编', object: '帝女花' },
+            { id: 2, subject: '任剑辉', predicate: '饰演', object: '周世显' },
+            { id: 3, subject: '白雪仙', predicate: '饰演', object: '长平公主' },
+            { id: 4, subject: '任剑辉', predicate: '搭档', object: '白雪仙' },
+            { id: 5, subject: '任白配', predicate: '主演', object: '帝女花' },
+            { id: 6, subject: '帝女花', predicate: '属于', object: '清' }
+        ];
+        let nextRelationId = 7;
+        
+        let relationMode = false;
+        let selectedEntity = null;
+        let activeRelationTag = '改编';
+        let canvas, ctx;
+        let canvasWidth, canvasHeight;
+        let dragEntity = null;
+        let dragOffsetX = 0, dragOffsetY = 0;
+        let mouseX = 0, mouseY = 0;
+        
+        function initRelationTags() {
+            document.querySelectorAll('.relation-tag').forEach(tag => {
+                tag.onclick = () => {
+                    document.querySelectorAll('.relation-tag').forEach(t => t.classList.remove('active'));
+                    tag.classList.add('active');
+                    activeRelationTag = tag.getAttribute('data-rel');
+                };
+            });
+        }
+        
+        function getTypeName(type) {
+            const types = { person: '人物', work: '作品', role: '角色', time: '时代' };
+            return types[type] || type;
+        }
+        
+        function getRelationColor(relation) {
+            const colors = { 改编: '#52c41a', 创作: '#52c41a', 饰演: '#1677ff', 搭档: '#722ed1', 主演: '#faad14', 编剧: '#1677ff', 首演于: '#52c41a', 属于: '#faad14' };
+            return colors[relation] || '#1677ff';
+        }
+        
+        function drawArrow(ctx, fromX, fromY, toX, toY, label) {
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            const arrowX = toX - 15 * Math.cos(angle);
+            const arrowY = toY - 15 * Math.sin(angle);
+            
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(arrowX, arrowY);
+            ctx.strokeStyle = getRelationColor(label);
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            const arrowAngle = Math.PI / 6;
+            const arrowSize = 8;
+            const leftX = arrowX - arrowSize * Math.cos(angle - arrowAngle);
+            const leftY = arrowY - arrowSize * Math.sin(angle - arrowAngle);
+            const rightX = arrowX - arrowSize * Math.cos(angle + arrowAngle);
+            const rightY = arrowY - arrowSize * Math.sin(angle + arrowAngle);
+            
+            ctx.beginPath();
+            ctx.moveTo(arrowX, arrowY);
+            ctx.lineTo(leftX, leftY);
+            ctx.lineTo(rightX, rightY);
+            ctx.fillStyle = getRelationColor(label);
+            ctx.fill();
+            
+            const midX = (fromX + toX) / 2;
+            const midY = (fromY + toY) / 2;
+            ctx.font = '10px "PingFang SC"';
+            ctx.fillStyle = getRelationColor(label);
+            ctx.shadowBlur = 2;
+            ctx.shadowColor = '#fff';
+            ctx.fillText(label, midX - 12, midY - 6);
+            ctx.shadowBlur = 0;
+        }
+        
+        function renderCanvas() {
+            if (!canvas || !ctx) return;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < canvasWidth; i += 30) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvasHeight);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvasWidth, i);
+                ctx.stroke();
+            }
+            
+            for (const rel of relations) {
+                const subject = canvasEntities.find(e => e.name === rel.subject);
+                const object = canvasEntities.find(e => e.name === rel.object);
+                if (subject && object) {
+                    drawArrow(ctx, subject.x, subject.y, object.x, object.y, rel.predicate);
+                }
+            }
+            
+            if (relationMode && selectedEntity && mouseX && mouseY) {
+                ctx.beginPath();
+                ctx.moveTo(selectedEntity.x, selectedEntity.y);
+                ctx.lineTo(mouseX, mouseY);
+                ctx.strokeStyle = '#52c41a';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 6]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            for (const entity of canvasEntities) {
+                ctx.beginPath();
+                ctx.arc(entity.x, entity.y, 22, 0, 2 * Math.PI);
+                ctx.fillStyle = entity.color + '20';
+                ctx.fill();
+                ctx.strokeStyle = entity.color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                if (selectedEntity === entity) {
+                    ctx.beginPath();
+                    ctx.arc(entity.x, entity.y, 28, 0, 2 * Math.PI);
+                    ctx.strokeStyle = '#ffd700';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+                
+                ctx.font = 'bold 12px "PingFang SC"';
+                ctx.fillStyle = entity.color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(entity.name, entity.x, entity.y);
+                
+                ctx.font = '9px "PingFang SC"';
+                ctx.fillStyle = '#999';
+                ctx.fillText(getTypeName(entity.type), entity.x, entity.y + 18);
+            }
+        }
+        
+        function findEntityAt(x, y) {
+            for (let i = canvasEntities.length - 1; i >= 0; i--) {
+                const entity = canvasEntities[i];
+                const dx = x - entity.x;
+                const dy = y - entity.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 22) return entity;
+            }
+            return null;
+        }
+        
+        function initCanvasEvents() {
+            if (!canvas) return;
+            
+            canvas.addEventListener('mousedown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mouseCanvasX = (e.clientX - rect.left) * scaleX;
+                const mouseCanvasY = (e.clientY - rect.top) * scaleY;
+                
+                const entity = findEntityAt(mouseCanvasX, mouseCanvasY);
+                if (entity) {
+                    if (relationMode) {
+                        if (selectedEntity && selectedEntity.name !== entity.name) {
+                            const exists = relations.some(r => 
+                                (r.subject === selectedEntity.name && r.object === entity.name));
+                            if (exists) {
+                                alert('这两个实体之间已存在关系');
+                            } else {
+                                addCanvasRelation(selectedEntity.name, entity.name);
+                            }
+                        }
+                        exitRelationMode();
+                    } else {
+                        enterRelationMode(entity);
+                    }
+                    e.preventDefault();
+                } else if (!relationMode) {
+                    dragEntity = findEntityAt(mouseCanvasX, mouseCanvasY);
+                    if (dragEntity) {
+                        dragOffsetX = mouseCanvasX - dragEntity.x;
+                        dragOffsetY = mouseCanvasY - dragEntity.y;
+                    }
+                }
+            });
+            
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                mouseX = (e.clientX - rect.left) * scaleX;
+                mouseY = (e.clientY - rect.top) * scaleY;
+                
+                if (dragEntity) {
+                    dragEntity.x = mouseX - dragOffsetX;
+                    dragEntity.y = mouseY - dragOffsetY;
+                    dragEntity.x = Math.max(25, Math.min(canvasWidth - 25, dragEntity.x));
+                    dragEntity.y = Math.max(25, Math.min(canvasHeight - 25, dragEntity.y));
+                    renderCanvas();
+                } else if (relationMode) {
+                    renderCanvas();
+                }
+            });
+            
+            canvas.addEventListener('mouseup', () => { dragEntity = null; });
+        }
+        
+        function addCanvasRelation(subject, object) {
+            relations.push({
+                id: nextRelationId++,
+                subject: subject,
+                predicate: activeRelationTag,
+                object: object
+            });
+            renderRelationList();
+            renderCanvas();
+            document.getElementById('canvasStatus').innerHTML = `已添加：${subject} → ${activeRelationTag} → ${object}`;
+            setTimeout(() => {
+                if (!relationMode) document.getElementById('canvasStatus').innerHTML = '等待连线';
+            }, 2000);
+        }
+        
+        function enterRelationMode(entity) {
+            relationMode = true;
+            selectedEntity = entity;
+            document.getElementById('modeHint').innerHTML = `🔗 连线中：${entity.name} → ?`;
+            document.getElementById('modeHint').classList.add('active');
+            document.getElementById('canvasStatus').innerHTML = `连线中：${entity.name} → ?`;
+            renderCanvas();
+        }
+        
+        function exitRelationMode() {
+            relationMode = false;
+            selectedEntity = null;
+            document.getElementById('modeHint').innerHTML = '💡 点击画板实体开始连线';
+            document.getElementById('modeHint').classList.remove('active');
+            document.getElementById('canvasStatus').innerHTML = '等待连线';
+            renderCanvas();
+        }
+        
+        function renderRelationList() {
+            const container = document.getElementById('relationList');
+            if (relations.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-tertiary); font-size:12px; padding:12px; text-align:center;">暂无关系，在画板上点击实体连线</div>';
+            } else {
+                container.innerHTML = relations.map((rel, idx) => `
+                    <div class="relation-card">
+                        <div class="relation-card-content">
+                            <span class="subject-badge">${rel.subject}</span>
+                            <span>→</span>
+                            <span class="predicate-badge">${rel.predicate}</span>
+                            <span>→</span>
+                            <span class="object-badge">${rel.object}</span>
+                        </div>
+                        <span class="delete-relation" onclick="deleteRelationByIndex(${idx})">✕</span>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('relationTotalCount').textContent = relations.length;
+            document.getElementById('progressRelationCount').textContent = relations.length;
+        }
+        
+        function deleteRelationByIndex(idx) {
+            relations.splice(idx, 1);
+            renderRelationList();
+            renderCanvas();
+        }
+        
+        function updateCanvasSize() {
+            const container = document.getElementById('relationCanvasContainer');
+            canvasWidth = container.clientWidth;
+            canvasHeight = container.clientHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            renderCanvas();
+        }
+        
+        function prevDoc() { alert('上一篇文档'); }
+        function skipDoc() { alert('跳过'); }
+        function releaseTask() { alert('任务已释放'); }
+        function saveAll() { alert(`已保存 ${relations.length} 组关系标注`); }
+        
+        function toggleSubmenu(el, subId) {
+            event.stopPropagation();
+            const subList = document.getElementById(subId);
+            const navItem = el.closest('.nav-item');
+            if (subList.style.maxHeight && subList.style.maxHeight !== '0px') {
+                subList.style.maxHeight = '0';
+                navItem.classList.remove('open');
+            } else {
+                subList.style.maxHeight = subList.scrollHeight + 'px';
+                navItem.classList.add('open');
+            }
+        }
+        
+        window.addEventListener('resize', () => { setTimeout(updateCanvasSize, 100); });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initRelationTags();
+            canvas = document.getElementById('relationCanvas');
+            ctx = canvas.getContext('2d');
+            updateCanvasSize();
+            initCanvasEvents();
+            renderRelationList();
+            document.getElementById('entityCount').textContent = canvasEntities.length;
+            document.getElementById('progressFill').style.width = '43%';
+        });
+    </script>
+</body>
+</html>
