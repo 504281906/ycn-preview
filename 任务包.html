@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>数据集-详情</title>
+<title>标注任务包</title>
 <style>
 :root {
 --primary: #1677ff;
@@ -250,147 +250,83 @@ select.form-control { border-radius:10px; }
 body { min-height:100vh; overflow-y:auto; overflow-x:hidden; }
 .content { overflow-y:auto; }
 .page { display:block !important; }
-.page.active { display:block !important; }
-.ds-tab-content { display:block !important; }
-.dataset-detail-page { padding:0; }
-.detail-tabs .tab:hover { color:var(--text); }
-.form-input, .form-select, .form-textarea { width:100%; }
+.ann-tab-content { display:block !important; }
 </style>
 </head>
 <body>
 <div class="sidebar">
-    <div class="sidebar-logo">
-        <h1>数据集管理平台</h1>
-    </div>
-    <div class="sidebar-nav">
-        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
-        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
-        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
-        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
-        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
-        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
-    </div>
+<div class="sidebar-logo"><h1>数据平台</h1><span>高质量数据集</span></div>
+<div class="sidebar-nav">
+<a class="nav-item" href="工作台.html"><span class="icon">◈</span><span class="text">工作台</span></a>
+<a class="nav-item" href="数据资源.html"><span class="icon">☰</span><span class="text">数据资源</span></a>
+<a class="nav-item" href="原始数据集.html"><span class="icon">▦</span><span class="text">原始数据集</span></a>
+<a class="nav-item" href="标注数据集.html"><span class="icon">▦</span><span class="text">标注数据集</span></a>
+<a class="nav-item" href="标注中心.html"><span class="icon">✎</span><span class="text">标注中心</span></a>
+<a class="nav-item" href="专题库.html"><span class="icon">▤</span><span class="text">专题库</span></a>
+<a class="nav-item" href="系统设置.html"><span class="icon">⚙</span><span class="text">系统设置</span></a>
+</div>
+<div class="sidebar-footer"><div class="user-info"><div class="user-avatar">张</div><div><div class="user-name">张三</div><div class="user-role">标注员</div></div></div></div>
 </div>
 <div class="main">
 <div class="topbar">
-<div class="topbar-title">数据集-详情</div>
+<div class="topbar-title">标注任务包</div>
 <div class="topbar-actions">
 <button class="btn btn-default">🔔 <span class="badge">3</span></button>
 <button class="btn btn-default">⚙ 设置</button>
 </div>
 </div>
 <div class="content">
-<div class="dataset-detail-page" style="padding:0;">
-<div class="card" style="border:none;">
-<div class="card-title" style="border-bottom:1px solid var(--border-light);">
-<div style="display:flex;align-items:center;gap:8px;">
-<span onclick="history.back()" style="cursor:pointer;font-size:18px;line-height:1;">‹</span>
-<span>数据集详情</span>
-</div>
-<div style="display:flex;gap:8px;">
-<button class="btn btn-default" style="height:30px;font-size:12px;">📤 导出</button>
-<button class="btn btn-default" style="height:30px;font-size:12px;">✎ 编辑</button>
-</div>
-</div>
-
-<!-- Dataset Header Info -->
-<div style="padding:20px 24px;border-bottom:1px solid var(--border-light);background:#fafafa;">
-<div style="display:flex;align-items:center;justify-content:space-between;">
-<div>
-<div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px;">街景语义分割-训练集</div>
-<div style="font-size:13px;color:var(--text-secondary);">数据集ID: DA-2025001　　创建时间: 2025-04-01　　状态: <span class="status-tag status-ing">进行中</span></div>
-</div>
-<div style="text-align:right;">
-<div style="font-size:24px;font-weight:600;color:var(--text);">12,580</div>
-<div style="font-size:12px;color:var(--text-tertiary);">数据总量</div>
+<div id="ann-view-task-pkg" class="ann-tab-content" >
+<div class="card">
+<div class="card-title">
+<span>子任务包详情</span>
+<div style="display:flex;gap:8px;align-items:center;">
+<input type="text" placeholder="搜索任务ID" style="height:28px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:12px;width:160px;">
+<select style="height:28px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;">
+<option>全部状态</option><option>待标注</option><option>标注中</option><option>待质检</option><option>质检中</option><option>已完成</option>
+</select>
 </div>
 </div>
-</div>
-
-<!-- Tabs -->
-<div class="detail-tabs" style="display:flex;border-bottom:1px solid var(--border-light);padding:0 24px;">
-<div class="tab active" style="padding:14px 20px;font-size:14px;color:var(--primary);border-bottom:2px solid var(--primary);margin-bottom:-1px;">基本信息</div>
-<div class="tab" style="padding:14px 20px;font-size:14px;color:var(--text-secondary);cursor:pointer;">数据预览</div>
-<div class="tab" style="padding:14px 20px;font-size:14px;color:var(--text-secondary);cursor:pointer;">标注结果</div>
-<div class="tab" style="padding:14px 20px;font-size:14px;color:var(--text-secondary);cursor:pointer;">关联任务</div>
-</div>
-
-<!-- Basic Info Content -->
-<div style="padding:24px;">
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;">
-<div>
-<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">数据集名称</div>
-<div style="font-size:14px;color:var(--text);font-weight:500;">街景语义分割-训练集</div>
-</div>
-<div>
-<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">数据类型</div>
-<div style="font-size:14px;color:var(--text);"><span class="status-tag status-ing">图像标注</span></div>
-</div>
-<div>
-<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">数据量</div>
-<div style="font-size:14px;color:var(--text);">12,580</div>
-</div>
-<div>
-<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">来源</div>
-<div style="font-size:14px;color:var(--text);">DS-2025001 街景图像集-V3</div>
-</div>
-<div>
-<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">标注进度</div>
-<div style="display:flex;align-items:center;gap:10px;">
-<div class="progress-bar" style="width:100px;"><div class="progress-fill" style="width:68%;"></div></div>
-<span style="font-size:14px;color:var(--text);font-weight:500;">68%</span>
-</div>
-</div>
-<div>
-<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">准确率</div>
-<div style="font-size:14px;color:var(--text);">94.2%</div>
-</div>
-<div>
-<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">标注类型</div>
-<div style="font-size:14px;color:var(--text);">语义分割</div>
-</div>
-<div>
-<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">标注模板</div>
-<div style="font-size:14px;color:var(--text);">CityScapeSegmentation v2.0</div>
-</div>
-</div>
-<div style="margin-top:24px;">
-<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">描述</div>
-<div style="font-size:14px;color:var(--text);line-height:1.6;">用于训练自动驾驶场景理解模型的高质量街道图像分割数据集，涵盖多天气、多时段、多城市路况。</div>
-</div>
-<div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border-light);">
-<div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:12px;">最近关联任务</div>
-<table style="width:100%;border-collapse:collapse;">
+<div class="overview-table">
+<table>
 <thead>
-<tr>
-<th style="text-align:left;padding:8px 12px;font-size:12px;color:var(--text-secondary);font-weight:500;border-bottom:1px solid var(--border-light);">任务ID</th>
-<th style="text-align:left;padding:8px 12px;font-size:12px;color:var(--text-secondary);font-weight:500;border-bottom:1px solid var(--border-light);">任务名称</th>
-<th style="text-align:left;padding:8px 12px;font-size:12px;color:var(--text-secondary);font-weight:500;border-bottom:1px solid var(--border-light);">状态</th>
-<th style="text-align:left;padding:8px 12px;font-size:12px;color:var(--text-secondary);font-weight:500;border-bottom:1px solid var(--border-light);">完成度</th>
-<th style="text-align:left;padding:8px 12px;font-size:12px;color:var(--text-secondary);font-weight:500;border-bottom:1px solid var(--border-light);">操作</th>
-</tr>
+<tr><th>子包ID</th><th>任务ID</th><th>任务名称</th><th>当前处理人</th><th>环节</th><th>状态</th><th>创建时间</th><th>操作</th></tr>
 </thead>
-<tbody>
-<tr>
-<td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border-light);">AT-20250401</td>
-<td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border-light);">街景图像分割-第一批</td>
-<td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border-light);"><span class="status-tag status-done">已完成</span></td>
-<td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border-light);">100%</td>
-<td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border-light);"><span class="action-link">查看</span></td>
+<tbody id="ann-pkg-body"><tr>
+<td>PKG-001</td>
+<td>街景分割-批次1-子包1</td>
+<td><span class="status-tag status-done">已完成</span></td>
+<td>张明</td>
+<td>200/200</td>
+<td>100%</td>
+<td>98%</td>
+<td><span class="action-link">查看</span></td>
 </tr>
 <tr>
-<td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border-light);">AT-20250408</td>
-<td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border-light);">街景图像分割-第二批</td>
-<td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border-light);"><span class="status-tag status-ing">进行中</span></td>
-<td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border-light);">68%</td>
-<td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border-light);"><span class="action-link">继续标注</span></td>
-</tr>
-</tbody>
+<td>PKG-002</td>
+<td>街景分割-批次1-子包2</td>
+<td><span class="status-tag status-ing">进行中</span></td>
+<td>李华</td>
+<td>150/200</td>
+<td>75%</td>
+<td>—</td>
+<td><span class="action-link">查看</span></td>
+</tr></tbody>
 </table>
 </div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+<div style="font-size:12px;color:var(--text-tertiary);">共 <strong id="ann-pkg-count">2</strong> 条记录</div>
+<div style="display:flex;align-items:center;gap:8px;">
+<button class="btn btn-default" style="height:28px;padding:0 10px;font-size:12px;">‹ 上一页</button>
+<button class="btn btn-default" style="height:28px;padding:0 10px;font-size:12px;">1</button>
+<button class="btn btn-default" style="height:28px;padding:0 10px;font-size:12px;">下一页 ›</button>
 </div>
 </div>
 </div>
+</div>
+
+<!-- 模板列表 -->
+<div id="
 </div>
 </div>
 <script>
@@ -489,4 +425,112 @@ title.textContent = pageMap[pageId];
 
 // Toggle todo item
 function toggleTodo(el) {
-var checkbox = el.querySelector('.todo-checkbo
+var checkbox = el.querySelector('.todo-checkbox');
+checkbox.classList.toggle('done');
+el.classList.toggle('done');
+}
+
+// Toggle checkbox item
+function toggleCheck(el) {
+el.classList.toggle('checked');
+var check = el.querySelector('.check');
+check.textContent = el.classList.contains('checked') ? '✓' : '';
+}
+
+// Switch resource tab
+function switchResourceTab(el, tabId) {
+// Update tab active state
+el.parentElement.querySelectorAll('.tab').forEach(function(t) {
+t.classList.remove('active');
+});
+el.classList.add('active');
+
+// Show/hide content
+document.querySelectorAll('.res-tab-content').forEach(function(c) {
+c.style.display = 'none';
+});
+var target = document.getElementById('res-' + tabId);
+if (target) target.style.display = 'block';
+}
+
+// Switch dataset sub tabs
+function switchDatasetTab(el, tabId) {
+// Update tab active state
+el.parentElement.querySelectorAll('.tab').forEach(function(t) {
+t.classList.remove('active');
+});
+el.classList.add('active');
+
+// Show/hide content
+document.querySelectorAll('.ds-tab-content').forEach(function(c) {
+c.style.display = 'none';
+});
+var target = document.getElementById('ds-' + tabId);
+if (target) {
+target.style.display = 'block';
+dmRefreshTable();
+}
+}
+
+// Toggle auth fields based on type (placeholder for real logic)
+function toggleAuthFields(type) {
+// In real app, would show/hide relevant fields
+}
+
+// System import form - show add/edit
+function showSysImportForm() {
+document.getElementById('sys-import-list').style.display = 'none';
+document.getElementById('sys-import-form').style.display = 'block';
+document.getElementById('sys-import-form-title').textContent = '新增系统导入配置';
+}
+
+
+function hideSysImportForm() {
+document.getElementById('sys-import-list').style.display = 'block';
+document.getElementById('sys-import-form').style.display = 'none';
+}
+
+// Platform import form
+function showPlatformForm() {
+document.getElementById('platform-list').style.display = 'none';
+document.getElementById('platform-form').style.display = 'block';
+document.getElementById('platform-form-title').textContent = '新增中台导入配置';
+}
+
+function hidePlatformForm() {
+document.getElementById('platform-list').style.display = 'block';
+document.getElementById('platform-form').style.display = 'none';
+}
+
+
+function addPlatformMappingRow() {
+var tbody = document.getElementById('plt-mapping-body');
+var tr = document.createElement('tr');
+tr.innerHTML = '<td><input class="form-input" placeholder="源字段"></td><td><input class="form-input" placeholder="目标字段"></td><td><span class="action-link" style="color:var(--error);">删除</span></td>';
+tbody.appendChild(tr);
+}
+
+// Show/hide collect task add form
+function showCollectAdd() {
+document.getElementById('collect-add-form').style.display = 'block';
+}
+
+function hideCollectAdd() {
+document.getElementById('collect-add-form').style.display = 'none';
+}
+
+// ============= DataMind dataset logic =============
+var dmOriginalDatasets = [
+{ id: 'DS-1001', name: '自动驾驶路测图片集', version: 'v2.1', dataType: '图片', dirPath: '/data/system/autocar_2024', dataQty: 12450, tags: '自动驾驶,障碍物', desc: '城区复杂道路场景', status: '标注中', creator: '张伟', createTime: '2025-02-10', visibleRange: '标注组,算法组', rawDataList: [
+{id:'RAW001', content:'car_front_001.jpg', type:'图片', time:'2025-02-11', annotations:[{label:'car',confidence:0.98,annotator:'李标注',time:'2025-03-15'}]},
+{id:'RAW002', content:'car_front_002.jpg', type:'图片', time:'2025-02-11', annotations:[{label:'pedestrian',confidence:0.92,annotator:'王标注',time:'2025-03-16'}]},
+{id:'RAW003', content:'car_front_003.jpg', type:'图片', time:'2025-02-12', annotations:[]}
+], annotationTasks:[{taskId:'TASK-A01',taskName:'目标检测标注',status:'进行中',progress:'62%',completeTime:''}] },
+{ id: 'DS-1002', name: '医疗影像CT样本集', version: 'v1.0', dataType: '图片', dirPath: '/data/system/pacs', dataQty: 5820, tags: '医疗,肺结节', desc: 'CT影像标注前', status: '采集中', creator: '李一', createTime: '2025-03-01', visibleRange: '医疗AI组', rawDataList:[
+{id:'RAW010',content:'CT_Scan_101.dcm',type:'图片',time:'2025-03-02',annotations:[]}
+], annotationTasks:[] },
+{ id: 'DS-1003', name: '多模态新闻理解', version: 'v0.9', dataType: '多模态', dirPath: '/data/mid/text_corpus', dataQty: 8700, tags: '新闻,图文', desc: '图文对+音频片段', status: '规划', creator: '王芳', createTime: '2025-01-15', visibleRange: '全体研发', rawDataList:[], annotationTasks:[] }
+];
+var dmAnnotationDatasets = [
+{ id: 'ADS-2001', name: '自动驾驶高质量标注集', sourceTaskId: 'TASK-A01', dataType: '图片', dataQty: 11500, annotationProgress: '100%', status: '已完成', createTime: '2025-03-20', creator: '标注系统', rawDataList:[
+{id:'RAW001',content:'car_front_001.jpg',type:'图片',

@@ -400,17 +400,29 @@ body {
 <body>
 <div class="sidebar">
     <div class="sidebar-logo">
-        <h1>数据集管理平台</h1>
+        <h1>数据平台</h1>
+        <span>高质量数据集</span>
     </div>
     <div class="sidebar-nav">
-        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
-        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
-        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
-        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
-        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
-        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+        <div class="nav-item"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item active"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-sub">
+            <div class="nav-sub-item active" onclick="location.href='专题列表.html'"><span class="dot"></span><span>专题列表</span></div>
+            <div class="nav-sub-item" onclick="location.href='数据.html'"><span class="dot"></span><span>新增专题</span></div>
+            <div class="nav-sub-item" onclick="location.href='数据维护.html'"><span class="dot"></span><span>数据维护</span></div>
+        </div>
+        <div class="nav-item"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">张</div>
+            <div><div class="user-name">张三</div><div class="user-role" id="roleDisplay">管理员</div></div>
+        </div>
     </div>
 </div>
+
 <div class="main">
     <div class="topbar">
         <div class="topbar-title">专题库 / 专题列表</div>

@@ -342,19 +342,30 @@
 </head>
 <body>
     <div class="sidebar">
-    <div class="sidebar-logo">
-        <h1>数据集管理平台</h1>
+        <div class="sidebar-logo">
+            <h1>广东省文化馆</h1>
+            <span>数字资源标注平台</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-item has-sub open" onclick="toggleSubmenu(this, 'text-subs')">
+                <span class="icon">T</span><span class="text">文本资源</span><span class="arrow">›</span>
+            </div>
+            <div class="nav-sub-list" id="text-subs" style="max-height: 80px;">
+                <div class="nav-sub-item active"><span class="dot"></span>实体分类</div>
+            </div>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">李</div>
+                <div>
+                    <div class="user-name">李华</div>
+                    <div class="user-role">标注员</div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="sidebar-nav">
-        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
-        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
-        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
-        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
-        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
-        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
-    </div>
-</div>
-<div class="main">
+
+    <div class="main">
         <div class="topbar">
             <div class="topbar-breadcrumb">
                 <span>广东省文化馆</span><span>›</span><span>数字资源标注</span><span>›</span>

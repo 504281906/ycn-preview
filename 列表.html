@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>数据集-数据列表</title>
+<title>原始数据集</title>
 <style>
 :root {
 --primary: #1677ff;
@@ -249,96 +249,201 @@ select.form-control { border-radius:10px; }
 <style>
 body { min-height:100vh; overflow-y:auto; overflow-x:hidden; }
 .content { overflow-y:auto; }
-.page { display:block !important; }
-.page.active { display:block !important; }
-.ds-tab-content { display:block !important; }
-.dataset-detail-page { padding:0; }
-.detail-tabs .tab:hover { color:var(--text); }
-.form-input, .form-select, .form-textarea { width:100%; }
+.page { display:block; }
+.page.active { display:block; }
 </style>
 </head>
 <body>
 <div class="sidebar">
-    <div class="sidebar-logo">
-        <h1>数据集管理平台</h1>
-    </div>
-    <div class="sidebar-nav">
-        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
-        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
-        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
-        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
-        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
-        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
-    </div>
+<div class="sidebar-logo">
+<h1>数据平台</h1>
+<span>高质量数据集</span>
+</div>
+<div class="sidebar-nav">
+<a class="nav-item" href="工作台.html"><span class="icon">◈</span><span class="text">工作台</span></a>
+<a class="nav-item" href="数据资源.html"><span class="icon">☰</span><span class="text">数据资源</span></a>
+<a class="nav-item" href="原始数据集.html"><span class="icon">▦</span><span class="text">原始数据集</span></a>
+<a class="nav-item" href="标注数据集.html"><span class="icon">▦</span><span class="text">标注数据集</span></a>
+<a class="nav-item" href="标注中心.html"><span class="icon">✎</span><span class="text">标注中心</span></a>
+<a class="nav-item" href="专题库.html"><span class="icon">▤</span><span class="text">专题库</span></a>
+<a class="nav-item" href="系统设置.html"><span class="icon">⚙</span><span class="text">系统设置</span></a>
+</div>
+<div class="sidebar-footer">
+<div class="user-info">
+<div class="user-avatar">张</div>
+<div>
+<div class="user-name">张三</div>
+<div class="user-role">标注员</div>
+</div>
+</div>
+</div>
 </div>
 <div class="main">
 <div class="topbar">
-<div class="topbar-title">数据集-数据列表</div>
+<div class="topbar-title">原始数据集</div>
 <div class="topbar-actions">
 <button class="btn btn-default">🔔 <span class="badge">3</span></button>
 <button class="btn btn-default">⚙ 设置</button>
 </div>
 </div>
 <div class="content">
-<div style="padding:0;">
-<div class="card" style="border:none;">
-<div class="card-title" style="border-bottom:1px solid var(--border-light);">
-<div style="display:flex;align-items:center;gap:8px;">
-<span onclick="history.back()" style="cursor:pointer;font-size:18px;line-height:1;">‹</span>
-<span id="dm-dataListTitle">数据列表 - 街景图像集-V3</span>
+<div id="ds-raw" class="ds-tab-content">
+<div class="card">
+<div class="card-title">
+<span>原始数据集</span>
+<button class="btn btn-primary" id="dm-openCreateBtn" onclick="dmShowCreateModal()" style="height:28px;font-size:12px;">+ 新建数据集</button>
 </div>
-<div style="font-size:12px;color:var(--text-tertiary);">共 <strong>12,580</strong> 条</div>
-</div>
-<div style="padding:16px 24px;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;align-items:center;">
-<input type="text" class="form-input" placeholder="搜索数据名称或ID" style="width:300px;height:34px;">
-<div style="display:flex;gap:8px;">
-<button class="btn btn-default" style="height:32px;font-size:12px;">‹ 上一页</button>
-<button class="btn btn-default" style="height:32px;font-size:12px;min-width:50px;">1</button>
-<button class="btn btn-default" style="height:32px;font-size:12px;min-width:50px;">2</button>
-<button class="btn btn-default" style="height:32px;font-size:12px;min-width:50px;">3</button>
-<span style="line-height:32px;font-size:12px;color:var(--text-tertiary);">...</span>
-<button class="btn btn-default" style="height:32px;font-size:12px;">下一页 ›</button>
-</div>
-</div>
-<table style="width:100%;border-collapse:collapse;">
+<div class="overview-table">
+<table>
 <thead>
-<tr>
-<th style="text-align:left;padding:10px 24px;font-size:12px;color:var(--text-secondary);font-weight:500;background:#fafafa;border-bottom:1px solid var(--border-light);">数据ID</th>
-<th style="text-align:left;padding:10px 24px;font-size:12px;color:var(--text-secondary);font-weight:500;background:#fafafa;border-bottom:1px solid var(--border-light);">文件名</th>
-<th style="text-align:left;padding:10px 24px;font-size:12px;color:var(--text-secondary);font-weight:500;background:#fafafa;border-bottom:1px solid var(--border-light);">类型</th>
-<th style="text-align:left;padding:10px 24px;font-size:12px;color:var(--text-secondary);font-weight:500;background:#fafafa;border-bottom:1px solid var(--border-light);">大小</th>
-<th style="text-align:left;padding:10px 24px;font-size:12px;color:var(--text-secondary);font-weight:500;background:#fafafa;border-bottom:1px solid var(--border-light);">标注状态</th>
-<th style="text-align:left;padding:10px 24px;font-size:12px;color:var(--text-secondary);font-weight:500;background:#fafafa;border-bottom:1px solid var(--border-light);">操作</th>
-</tr>
+<tr><th>数据集ID</th><th>数据集名称</th><th>类型</th><th>数据量</th><th>来源</th><th>创建时间</th><th>操作</th></tr>
 </thead>
-<tbody>
-<tr>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);color:var(--primary);">IMG-00001</td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);">beijing_street_001.jpg</td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);"><span class="status-tag status-done">已标注</span></td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);">2.4 MB</td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);"><span class="action-link">查看</span></td>
+<tbody id="dm-raw-body"><tr>
+<td>DS-2025001</td>
+<td>街景图像集-V3</td>
+<td><span class="status-tag status-ing">图像</span></td>
+<td>12,580</td>
+<td>互联网采集</td>
+<td>2025-03-12</td>
+<td><span class="action-link" onclick="dmShowDataListModal('DS-2025001')">查看</span><span class="action-link">删除</span></td>
 </tr>
 <tr>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);color:var(--primary);">IMG-00002</td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);">shanghai_avenue_002.jpg</td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);"><span class="status-tag status-done">已标注</span></td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);">1.8 MB</td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);"><span class="action-link">查看</span></td>
+<td>DS-2025002</td>
+<td>商品评论文本</td>
+<td><span class="status-tag status-done">文本</span></td>
+<td>8,340</td>
+<td>系统导入</td>
+<td>2025-03-18</td>
+<td><span class="action-link" onclick="dmShowDataListModal('DS-2025002')">查看</span><span class="action-link">删除</span></td>
 </tr>
 <tr>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);color:var(--primary);">IMG-00003</td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);">guangzhou_road_003.jpg</td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);"><span class="status-tag status-ing">标注中</span></td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);">2.1 MB</td>
-<td style="padding:12px 24px;font-size:13px;border-bottom:1px solid var(--border-light);"><span class="action-link">继续</span></td>
+<td>DS-2025003</td>
+<td>医学影像标注集</td>
+<td><span class="status-tag status-ing">图像</span></td>
+<td>5,200</td>
+<td>本地导入</td>
+<td>2025-04-02</td>
+<td><span class="action-link" onclick="dmShowDataListModal('DS-2025003')">查看</span><span class="action-link">删除</span></td>
 </tr>
 </tbody>
 </table>
 </div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+<div style="font-size:12px;color:var(--text-tertiary);">共 <strong id="dm-raw-count">3</strong> 条记录</div>
+<div style="display:flex;align-items:center;gap:8px;">
+<button class="btn btn-default" style="height:28px;padding:0 10px;font-size:12px;">‹ 上一页</button>
+<button class="btn btn-default" style="height:28px;padding:0 10px;font-size:12px;">1</button>
+<button class="btn btn-default" style="height:28px;padding:0 10px;font-size:12px;">2</button>
+<span style="font-size:12px;color:var(--text-tertiary);">...</span>
+<button class="btn btn-default" style="height:28px;padding:0 10px;font-size:12px;">下一页 ›</button>
 </div>
 </div>
 </div>
+</div>
+</div>
+</div>
+<!-- DataMind Modals -->
+<div id="dm-createModal" class="modal">
+<div class="modal-content">
+<h3 style="margin-bottom:16px;font-size:16px;">📁 新建原始数据集</h3>
+<form id="dm-createForm">
+<div class="form-row">
+<div class="form-group">
+<label>数据集名称 <span class="required">*</span></label>
+<input type="text" id="dm-dsName" class="form-control" placeholder="例如：智能驾驶图像集">
+</div>
+<div class="form-group">
+<label>版本号</label>
+<input type="text" id="dm-dsVersion" class="form-control" value="v1.0">
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>数据类型</label>
+<select id="dm-dsType" class="form-control">
+<option>文本</option><option>图片</option><option>视频</option><option>音频</option><option>结构化</option><option>多模态</option>
+</select>
+</div>
+<div class="form-group">
+<label>目标数据量 (条)</label>
+<input type="number" id="dm-dsTargetQty" class="form-control" value="1500">
+</div>
+</div>
+<div class="form-group">
+<label>数据来源（选择数据目录）</label>
+<div class="directory-tree" id="dm-directoryTree"></div>
+<input type="hidden" id="dm-selectedDirPath" value="">
+<div class="form-hint">点击选择已接入的系统数据/中台数据/本地数据目录</div>
+</div>
+<div class="form-group">
+<label>标签</label>
+<input type="text" id="dm-dsTags" class="form-control" placeholder="例如：自动驾驶,2D标注">
+</div>
+<div class="form-group">
+<label>描述</label>
+<textarea id="dm-dsDesc" rows="2" class="form-control" placeholder="数据集简介..."></textarea>
+</div>
+<div class="form-group">
+<label>可查看人员范围</label>
+<input type="text" id="dm-dsVisible" class="form-control" placeholder="部门/角色，如：算法团队">
+</div>
+<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+<button type="button" class="btn btn-default" id="dm-closeCreateModal">取消</button>
+<button type="submit" class="btn btn-primary">创建数据集</button>
+</div>
+</form>
+</div>
+</div>
+
+<div id="dm-dataListModal" class="modal">
+<div class="modal-content-wide">
+<div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+<h3 id="dm-dataListTitle" style="font-size:16px;">数据列表</h3>
+<span onclick="document.getElementById('dm-dataListModal').style.display='none'" style="cursor:pointer;font-size:20px;line-height:1;">✕</span>
+</div>
+<div style="max-height:380px;overflow-y:auto;border:1px solid var(--border-light);border-radius:12px;">
+<table style="width:100%;font-size:13px;">
+<thead><tr><th>数据ID</th><th>数据内容</th><th>数据类型</th><th>入库时间</th><th>操作</th></tr></thead>
+<tbody id="dm-dataListTableBody"></tbody>
+</table>
+</div>
+<div id="dm-singleDataDetailPanel" style="margin-top:16px;display:none;">
+<div style="border-top:1px solid var(--border-light);padding-top:16px;">
+<div class="data-detail-split">
+<div class="data-left"><h4>📄 原始数据</h4><div id="dm-rawDataDetail">-</div></div>
+<div class="data-right"><h4>✅ 标注结果</h4><div id="dm-annotationResultDetail">暂无标注结果</div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="dm-taskListModal" class="modal">
+<div class="modal-content">
+<div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+<h3 style="font-size:16px;">📋 关联标注任务列表</h3>
+<span onclick="document.getElementById('dm-taskListModal').style.display='none'" style="cursor:pointer;font-size:20px;line-height:1;">✕</span>
+</div>
+<div style="overflow-x:auto;">
+<table style="width:100%;font-size:13px;">
+<thead><tr><th>任务ID</th><th>任务名称</th><th>状态</th><th>进度</th><th>完成时间</th></tr></thead>
+<tbody id="dm-taskListTableBody"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div id="dm-detailModal" class="modal">
+<div class="modal-content">
+<div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+<h3 id="dm-detailTitle" style="font-size:16px;">数据集详情</h3>
+<span onclick="document.getElementById('dm-detailModal').style.display='none'" style="cursor:pointer;font-size:20px;line-height:1;">✕</span>
+</div>
+<div id="dm-detailBody"></div>
+</div>
+</div>
+
+
 <script>
 // Page title map
 var pageMap = {
@@ -428,90 +533,4 @@ annRefreshView(subTab);
 
 // Update page title
 var title = document.getElementById('pageTitle');
-if (title && pageMap[pageId]) {
-title.textContent = pageMap[pageId];
-}
-}
-
-// Toggle todo item
-function toggleTodo(el) {
-var checkbox = el.querySelector('.todo-checkbox');
-checkbox.classList.toggle('done');
-el.classList.toggle('done');
-}
-
-// Toggle checkbox item
-function toggleCheck(el) {
-el.classList.toggle('checked');
-var check = el.querySelector('.check');
-check.textContent = el.classList.contains('checked') ? '✓' : '';
-}
-
-// Switch resource tab
-function switchResourceTab(el, tabId) {
-// Update tab active state
-el.parentElement.querySelectorAll('.tab').forEach(function(t) {
-t.classList.remove('active');
-});
-el.classList.add('active');
-
-// Show/hide content
-document.querySelectorAll('.res-tab-content').forEach(function(c) {
-c.style.display = 'none';
-});
-var target = document.getElementById('res-' + tabId);
-if (target) target.style.display = 'block';
-}
-
-// Switch dataset sub tabs
-function switchDatasetTab(el, tabId) {
-// Update tab active state
-el.parentElement.querySelectorAll('.tab').forEach(function(t) {
-t.classList.remove('active');
-});
-el.classList.add('active');
-
-// Show/hide content
-document.querySelectorAll('.ds-tab-content').forEach(function(c) {
-c.style.display = 'none';
-});
-var target = document.getElementById('ds-' + tabId);
-if (target) {
-target.style.display = 'block';
-dmRefreshTable();
-}
-}
-
-// Toggle auth fields based on type (placeholder for real logic)
-function toggleAuthFields(type) {
-// In real app, would show/hide relevant fields
-}
-
-// System import form - show add/edit
-function showSysImportForm() {
-document.getElementById('sys-import-list').style.display = 'none';
-document.getElementById('sys-import-form').style.display = 'block';
-document.getElementById('sys-import-form-title').textContent = '新增系统导入配置';
-}
-
-
-function hideSysImportForm() {
-document.getElementById('sys-import-list').style.display = 'block';
-document.getElementById('sys-import-form').style.display = 'none';
-}
-
-// Platform import form
-function showPlatformForm() {
-document.getElementById('platform-list').style.display = 'none';
-document.getElementById('platform-form').style.display = 'block';
-document.getElementById('platform-form-title').textContent = '新增中台导入配置';
-}
-
-function hidePlatformForm() {
-document.getElementById('platform-list').style.display = 'block';
-document.getElementById('platform-form').style.display = 'none';
-}
-
-
-function addPlatformMappingRow() {
-var tbody = document.getElementBy
+if (

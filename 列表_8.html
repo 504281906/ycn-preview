@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>数据集-新建</title>
+<title>标注模板列表</title>
 <style>
 :root {
 --primary: #1677ff;
@@ -250,105 +250,83 @@ select.form-control { border-radius:10px; }
 body { min-height:100vh; overflow-y:auto; overflow-x:hidden; }
 .content { overflow-y:auto; }
 .page { display:block !important; }
-.page.active { display:block !important; }
-.ds-tab-content { display:block !important; }
-.dataset-detail-page { padding:0; }
-.detail-tabs .tab:hover { color:var(--text); }
-.form-input, .form-select, .form-textarea { width:100%; }
+.ann-tab-content { display:block !important; }
 </style>
 </head>
 <body>
 <div class="sidebar">
-    <div class="sidebar-logo">
-        <h1>数据集管理平台</h1>
-    </div>
-    <div class="sidebar-nav">
-        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
-        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
-        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
-        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
-        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
-        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
-    </div>
+<div class="sidebar-logo"><h1>数据平台</h1><span>高质量数据集</span></div>
+<div class="sidebar-nav">
+<a class="nav-item" href="工作台.html"><span class="icon">◈</span><span class="text">工作台</span></a>
+<a class="nav-item" href="数据资源.html"><span class="icon">☰</span><span class="text">数据资源</span></a>
+<a class="nav-item" href="原始数据集.html"><span class="icon">▦</span><span class="text">原始数据集</span></a>
+<a class="nav-item" href="标注数据集.html"><span class="icon">▦</span><span class="text">标注数据集</span></a>
+<a class="nav-item" href="标注中心.html"><span class="icon">✎</span><span class="text">标注中心</span></a>
+<a class="nav-item" href="专题库.html"><span class="icon">▤</span><span class="text">专题库</span></a>
+<a class="nav-item" href="系统设置.html"><span class="icon">⚙</span><span class="text">系统设置</span></a>
+</div>
+<div class="sidebar-footer"><div class="user-info"><div class="user-avatar">张</div><div><div class="user-name">张三</div><div class="user-role">标注员</div></div></div></div>
 </div>
 <div class="main">
 <div class="topbar">
-<div class="topbar-title">数据集-新建</div>
+<div class="topbar-title">标注模板列表</div>
 <div class="topbar-actions">
 <button class="btn btn-default">🔔 <span class="badge">3</span></button>
 <button class="btn btn-default">⚙ 设置</button>
 </div>
 </div>
 <div class="content">
-<div style="padding:0;">
-<div class="card" style="border:none;">
-<div class="card-title" style="border-bottom:1px solid var(--border-light);">
+<div id="ann-view-tpl-list" class="ann-tab-content" >
+<div class="card">
+<div class="card-title">
+<span>标注模板列表</span>
+<button class="btn btn-primary" onclick="annShowTplModal()" style="height:28px;font-size:12px;">+ 新建模板</button>
+</div>
+<div style="padding:0 16px 12px;display:flex;gap:8px;align-items:center;">
+<input type="text" placeholder="搜索模板名称" style="height:28px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:12px;width:160px;">
+<select style="height:28px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;">
+<option>全部类型</option><option>文本</option><option>图片</option><option>视频</option>
+</select>
+<button class="btn btn-default" style="height:28px;font-size:12px;">搜索</button>
+</div>
+<div class="overview-table">
+<table>
+<thead>
+<tr><th>模板ID</th><th>模板名称</th><th>类型</th><th>标注项类型</th><th>版本</th><th>状态</th><th>创建人</th><th>操作</th></tr>
+</thead>
+<tbody id="ann-tpl-body"><tr>
+<td>TPL-001</td>
+<td>语义分割模板</td>
+<td>图像标注</td>
+<td>语义分割</td>
+<td>张三</td>
+<td>2025-03-15</td>
+<td><span class="action-link" onclick="location.href='标注模板配置.html?id=TPL-001'">编辑</span></td>
+</tr>
+<tr>
+<td>TPL-002</td>
+<td>情感分析模板</td>
+<td>文本标注</td>
+<td>文本分类</td>
+<td>李四</td>
+<td>2025-03-20</td>
+<td><span class="action-link" onclick="location.href='标注模板配置.html?id=TPL-002'">编辑</span></td>
+</tr></tbody>
+</table>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+<div style="font-size:12px;color:var(--text-tertiary);">共 <strong id="ann-tpl-count">2</strong> 条记录</div>
 <div style="display:flex;align-items:center;gap:8px;">
-<span onclick="history.back()" style="cursor:pointer;font-size:18px;line-height:1;">‹</span>
-<span>新建数据集</span>
-</div>
-</div>
-<div style="padding:24px;">
-<form id="dm-createForm">
-<div class="form-row">
-<div class="form-group">
-<label class="form-label">数据集名称 <span class="required">*</span></label>
-<input type="text" class="form-input" id="dm-dsName" placeholder="请输入数据集名称" style="width:100%;">
-</div>
-<div class="form-group">
-<label class="form-label">数据集版本</label>
-<input type="text" class="form-input" id="dm-dsVersion" placeholder="如 v1.0" style="width:100%;">
-</div>
-</div>
-<div class="form-row">
-<div class="form-group">
-<label class="form-label">数据类型 <span class="required">*</span></label>
-<select class="form-select" id="dm-dsType" style="width:100%;">
-<option value="">请选择</option>
-<option value="image">图像</option>
-<option value="text">文本</option>
-<option value="audio">音频</option>
-<option value="video">视频</option>
-</select>
-</div>
-<div class="form-group">
-<label class="form-label">目标数量</label>
-<input type="number" class="form-input" id="dm-dsTargetQty" placeholder="计划采集数量" style="width:100%;">
-</div>
-</div>
-<div class="form-row">
-<div class="form-group">
-<label class="form-label">数据目录</label>
-<div style="display:flex;gap:8px;">
-<input type="text" class="form-input" id="dm-selectedDirPath" placeholder="选择数据所在目录" style="flex:1;" readonly>
-<button type="button" class="btn btn-default" onclick="dmPopulateDirTree()" style="height:36px;white-space:nowrap;">浏览...</button>
-</div>
-</div>
-<div class="form-group">
-<label class="form-label">可见范围</label>
-<select class="form-select" id="dm-dsVisible" style="width:100%;">
-<option value="public">公开</option>
-<option value="team">团队内</option>
-<option value="private">私有</option>
-</select>
-</div>
-</div>
-<div class="form-group" style="margin-top:16px;">
-<label class="form-label">标签</label>
-<input type="text" class="form-input" id="dm-dsTags" placeholder="多个标签用逗号分隔，如：自动驾驶,街景,分割" style="width:100%;">
-</div>
-<div class="form-group" style="margin-top:16px;">
-<label class="form-label">描述</label>
-<textarea class="form-textarea" id="dm-dsDesc" placeholder="描述数据集的用途、来源、特点等信息" style="width:100%;min-height:100px;"></textarea>
-</div>
-<div style="display:flex;gap:12px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border-light);">
-<button type="button" class="btn btn-primary" onclick="dmCloseCreateModal()" style="height:36px;padding:0 32px;font-size:14px;">创建</button>
-<button type="button" class="btn btn-default" onclick="history.back()" style="height:36px;padding:0 32px;font-size:14px;">取消</button>
-</div>
-</form>
+<button class="btn btn-default" style="height:28px;padding:0 10px;font-size:12px;">‹ 上一页</button>
+<button class="btn btn-default" style="height:28px;padding:0 10px;font-size:12px;">1</button>
+<button class="btn btn-default" style="height:28px;padding:0 10px;font-size:12px;">下一页 ›</button>
 </div>
 </div>
 </div>
+</div>
+
+<!-- 模板配置 -->
+<div id="
 </div>
 </div>
 <script>
@@ -544,4 +522,14 @@ document.getElementById('collect-add-form').style.display = 'none';
 // ============= DataMind dataset logic =============
 var dmOriginalDatasets = [
 { id: 'DS-1001', name: '自动驾驶路测图片集', version: 'v2.1', dataType: '图片', dirPath: '/data/system/autocar_2024', dataQty: 12450, tags: '自动驾驶,障碍物', desc: '城区复杂道路场景', status: '标注中', creator: '张伟', createTime: '2025-02-10', visibleRange: '标注组,算法组', rawDataList: [
-{id:'RAW001', content:'car_front_001.jpg', type:'图片', time:'2025-02-11', annotations:[{label:'car',confidence:0.98,annotator:'李标注
+{id:'RAW001', content:'car_front_001.jpg', type:'图片', time:'2025-02-11', annotations:[{label:'car',confidence:0.98,annotator:'李标注',time:'2025-03-15'}]},
+{id:'RAW002', content:'car_front_002.jpg', type:'图片', time:'2025-02-11', annotations:[{label:'pedestrian',confidence:0.92,annotator:'王标注',time:'2025-03-16'}]},
+{id:'RAW003', content:'car_front_003.jpg', type:'图片', time:'2025-02-12', annotations:[]}
+], annotationTasks:[{taskId:'TASK-A01',taskName:'目标检测标注',status:'进行中',progress:'62%',completeTime:''}] },
+{ id: 'DS-1002', name: '医疗影像CT样本集', version: 'v1.0', dataType: '图片', dirPath: '/data/system/pacs', dataQty: 5820, tags: '医疗,肺结节', desc: 'CT影像标注前', status: '采集中', creator: '李一', createTime: '2025-03-01', visibleRange: '医疗AI组', rawDataList:[
+{id:'RAW010',content:'CT_Scan_101.dcm',type:'图片',time:'2025-03-02',annotations:[]}
+], annotationTasks:[] },
+{ id: 'DS-1003', name: '多模态新闻理解', version: 'v0.9', dataType: '多模态', dirPath: '/data/mid/text_corpus', dataQty: 8700, tags: '新闻,图文', desc: '图文对+音频片段', status: '规划', creator: '王芳', createTime: '2025-01-15', visibleRange: '全体研发', rawDataList:[], annotationTasks:[] }
+];
+var dmAnnotationDatasets = [
+{ id: 'ADS-2001', name: '自动驾驶高质量标注集', sourceTaskId: 'TASK-A01', dataType: '图片', dataQty: 11500, annotationProgress: '100%', status: '已完成', createTi

@@ -86,18 +86,27 @@
 <body>
 
 <div class="sidebar">
-    <div class="sidebar-logo">
-        <h1>数据集管理平台</h1>
-    </div>
+    <div class="sidebar-logo"><h1>数据平台</h1><span>高质量数据集</span></div>
     <div class="sidebar-nav">
-        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
-        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
-        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
-        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
-        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
-        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+        <div class="nav-item"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item has-sub open"><span class="icon">☰</span><span class="text">数据资源</span><span class="arrow">›</span></div>
+        <div class="nav-sub-list open" style="display:block;">
+            <div class="nav-sub-item"><span class="dot"></span>系统导入</div>
+            <div class="nav-sub-item"><span class="dot"></span>中台导入</div>
+            <div class="nav-sub-item active"><span class="dot"></span>本地导入</div>
+            <div class="nav-sub-item"><span class="dot"></span>互联网采集</div>
+            <div class="nav-sub-item"><span class="dot"></span>资源存储</div>
+        </div>
+        <div class="nav-item has-sub"><span class="icon">▦</span><span class="text">数据集管理</span><span class="arrow">›</span></div>
+        <div class="nav-item has-sub"><span class="icon">✎</span><span class="text">标注中心</span><span class="arrow">›</span></div>
+        <div class="nav-item has-sub"><span class="icon">▤</span><span class="text">专题库</span><span class="arrow">›</span></div>
+        <div class="nav-item has-sub"><span class="icon">⚙</span><span class="text">系统设置</span><span class="arrow">›</span></div>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info"><div class="user-avatar">张</div><div><div class="user-name">张三</div><div class="user-role">标注员</div></div></div>
     </div>
 </div>
+
 <div class="main">
     <div class="topbar">
         <div class="topbar-breadcrumb"><span><a href="local_import_list.html">数据资源 / 本地导入</a> / 上传文件</span></div>
