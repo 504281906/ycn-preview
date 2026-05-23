@@ -263,147 +263,16 @@ body {
 <body>
 <div class="sidebar">
     <div class="sidebar-logo">
-        <h1>广东省文化馆</h1>
-        <span>非遗数字化保护平台</span>
+        <h1>数据集管理平台</h1>
     </div>
     <div class="sidebar-nav">
-        <div class="nav-item"><span class="icon">◈</span><span class="text">工作台</span></div>
-        <div class="nav-item"><span class="icon">☰</span><span class="text">数字资源库</span></div>
-        <div class="nav-item"><span class="icon">▦</span><span class="text">非遗数据集</span></div>
-        <div class="nav-item active"><span class="icon">▤</span><span class="text">专题库</span></div>
-        <div class="nav-sub">
-            <div class="nav-sub-item" onclick="location.href='专题卡片列表.html'"><span class="dot"></span><span>专题视图</span></div>
-            <div class="nav-sub-item active" onclick="location.href='专题详情.html'"><span class="dot"></span><span>数据浏览</span></div>
-        </div>
-        <div class="nav-item"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
     </div>
-    <div class="sidebar-footer">
-        <div class="user-info"><div class="user-avatar">陈</div><div><div class="user-name">陈敏</div><div class="user-role">非遗保护专员</div></div></div>
-    </div>
+</div>
 </div>
 <div class="main">
-    <div class="topbar">
-        <div class="topbar-title" id="pageTitle">专题详情</div>
-        <div class="topbar-actions"><button class="btn btn-default btn-compact" onclick="location.href='专题卡片列表.html'">返回专题列表</button></div>
-    </div>
-    <div class="content">
-        <div class="card">
-            <div class="card-header">
-                <div><h3 id="topicName">加载中...</h3><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;" id="topicId"></div></div>
-                <div class="btn-group" id="viewToggle">
-                    <button class="btn active" data-view="list">列表视图</button>
-                    <button class="btn" data-view="card">卡片视图</button>
-                </div>
-            </div>
-            <div class="maintain-layout" style="padding:20px;">
-                <div class="dir-panel">
-                    <div style="font-weight:500;margin-bottom:12px;">分类目录</div>
-                    <div id="dirTree"></div>
-                </div>
-                <div style="flex:1;">
-                    <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
-                        <div><strong id="currentDir">全部</strong><span class="badge-count" id="dataCount">0条</span></div>
-                        <input type="text" id="searchData" class="filter-select" placeholder="搜索数据..." style="width:180px;">
-                    </div>
-                    <div id="listView" class="data-table-wrapper"><table class="data-table"><thead><tr><th>编号</th><th>资源名称</th><th>类型</th><th>来源</th></tr></thead><tbody id="dataListBody"></tbody></table></div>
-                    <div id="cardView" style="display:none;" class="card-grid" id="dataCardBody"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<script>
-const urlParams = new URLSearchParams(window.location.search);
-const topicId = urlParams.get('topicId') || 'GD-ICH-001';
-const topics = {
-    "GD-ICH-001": { name: "岭南非物质文化遗产专题", dirs: ["全部", "传统音乐", "传统舞蹈", "传统戏剧", "传统美术", "民俗"], data: {
-        "全部": [{ id:"ICH-001", name:"广东音乐·赛龙夺锦", type:"音频", source:"广东省文化馆" },{ id:"ICH-002", name:"潮州工夫茶艺", type:"视频", source:"潮州非遗中心" },{ id:"ICH-003", name:"粤剧·帝女花", type:"视频", source:"广东粤剧院" },{ id:"ICH-004", name:"佛山木版年画", type:"图像", source:"佛山博物馆" },{ id:"ICH-005", name:"广东醒狮技艺", type:"文档", source:"非遗保护中心" }],
-        "传统音乐": [{ id:"MUS-001", name:"广东汉乐·怀古", type:"音频", source:"大埔县文化馆" },{ id:"MUS-002", name:"客家山歌·过山溜", type:"音频", source:"梅州非遗中心" }],
-        "传统舞蹈": [{ id:"DAN-001", name:"普宁英歌舞", type:"视频", source:"普宁文化馆" },{ id:"DAN-002", name:"湛江人龙舞", type:"视频", source:"湛江非遗中心" }],
-        "传统戏剧": [{ id:"DRA-001", name:"粤剧·关汉卿", type:"视频", source:"广东粤剧院" }],
-        "传统美术": [{ id:"ART-001", name:"广绣技艺", type:"图像", source:"广州非遗中心" }],
-        "民俗": [{ id:"FOL-001", name:"佛山秋色巡游", type:"视频", source:"佛山文化馆" }]
-    }},
-    "GD-ICH-002": { name: "广东传统节庆民俗专题", dirs: ["全部", "春节民俗", "端午习俗", "中秋文化"], data: {
-        "全部": [{ id:"FST-001", name:"广东年俗大全", type:"文档", source:"省文化馆" }],
-        "春节民俗": [{ id:"SPR-001", name:"广府行花街", type:"视频", source:"广州文化馆" }],
-        "端午习俗": [{ id:"DRG-001", name:"东莞龙舟制作", type:"文档", source:"东莞非遗中心" }],
-        "中秋文化": [{ id:"MID-001", name:"佛山秋色灯会", type:"视频", source:"佛山文化馆" }]
-    }},
-    "GD-ICH-003": { name: "岭南传统建筑技艺专题", dirs: ["全部", "广府建筑", "潮汕建筑", "客家围屋"], data: {
-        "全部": [{ id:"ARC-001", name:"岭南建筑测绘数据集", type:"CAD", source:"华南理工大学" }],
-        "广府建筑": [{ id:"CAN-001", name:"西关大屋结构图", type:"CAD", source:"广州大学" }],
-        "潮汕建筑": [{ id:"CHA-001", name:"潮汕祠堂营造技艺", type:"视频", source:"潮州文化馆" }],
-        "客家围屋": [{ id:"HAK-001", name:"梅州围龙屋测绘", type:"CAD", source:"嘉应学院" }]
-    }},
-    "GD-ICH-004": { name: "广东戏曲曲艺专题", dirs: ["全部", "粤剧", "潮剧", "广东汉剧"], data: {
-        "全部": [{ id:"OPR-001", name:"广东戏曲名家访谈", type:"音频", source:"省艺术研究所" }],
-        "粤剧": [{ id:"YUE-001", name:"红线女唱腔分析", type:"文档", source:"红线女艺术中心" }],
-        "潮剧": [{ id:"CHA-001", name:"潮剧丑角表演艺术", type:"视频", source:"潮州潮剧团" }],
-        "广东汉剧": [{ id:"HAN-001", name:"汉剧剧目汇编", type:"文档", source:"广东汉剧院" }]
-    }}
-};
-const topic = topics[topicId] || topics["GD-ICH-001"];
-let currentDir = "全部";
-let currentView = "list";
-document.getElementById("pageTitle").innerText = `专题详情 / ${topic.name}`;
-document.getElementById("topicName").innerText = topic.name;
-document.getElementById("topicId").innerHTML = `专题ID: ${topicId}`;
-function renderDirTree() {
-    const container = document.getElementById("dirTree");
-    container.innerHTML = "";
-    topic.dirs.forEach(dir => {
-        const div = document.createElement("div");
-        div.className = `dir-node ${currentDir === dir ? 'active' : ''}`;
-        div.innerHTML = `📄 ${dir}`;
-        div.onclick = () => { currentDir = dir; renderDirTree(); renderData(); };
-        container.appendChild(div);
-    });
-}
-function renderData() {
-    const items = topic.data[currentDir] || [];
-    const searchVal = document.getElementById("searchData").value.toLowerCase();
-    const filtered = items.filter(item => item.name.toLowerCase().includes(searchVal) || item.id.toLowerCase().includes(searchVal));
-    document.getElementById("currentDir").innerHTML = currentDir;
-    document.getElementById("dataCount").innerHTML = filtered.length + "条";
-    if (currentView === "list") {
-        document.getElementById("listView").style.display = "block";
-        document.getElementById("cardView").style.display = "none";
-        const tbody = document.getElementById("dataListBody");
-        tbody.innerHTML = "";
-        filtered.forEach(item => {
-            const row = `<tr><td style="font-family:monospace;">${item.id}</td><td><strong>${item.name}</strong></td><td><span style="background:var(--border-light);padding:2px 6px;border-radius:4px;">${item.type}</span></td><td style="color:var(--text-tertiary);">${item.source}</td></tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
-        });
-        document.querySelectorAll("#dataListBody tr").forEach(row => {
-            row.style.cursor = "pointer";
-            row.onclick = () => { const firstCell = row.cells[0]?.innerText; const item = filtered.find(i => i.id === firstCell); if(item) location.href = `数据详情.html?id=${item.id}&topicId=${topicId}&dir=${currentDir}`; };
-        });
-    } else {
-        document.getElementById("listView").style.display = "none";
-        document.getElementById("cardView").style.display = "block";
-        const container = document.getElementById("cardView");
-        container.innerHTML = "";
-        filtered.forEach(item => {
-            const card = `<div class="data-card" data-id="${item.id}"><div class="title">${item.name}</div><div class="meta">编号: ${item.id} | 类型: ${item.type}</div><div class="meta">来源: ${item.source}</div></div>`;
-            container.insertAdjacentHTML('beforeend', card);
-        });
-        document.querySelectorAll(".data-card").forEach(card => {
-            card.onclick = () => { const id = card.getAttribute("data-id"); const item = filtered.find(i => i.id === id); if(item) location.href = `数据详情.html?id=${item.id}&topicId=${topicId}&dir=${currentDir}`; };
-        });
-    }
-}
-document.getElementById("searchData").addEventListener("input", renderData);
-document.querySelectorAll("#viewToggle .btn").forEach(btn => {
-    btn.onclick = () => {
-        document.querySelectorAll("#viewToggle .btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentView = btn.getAttribute("data-view");
-        renderData();
-    };
-});
-renderDirTree();
-renderData();
-</script>
-</body>
-</html>

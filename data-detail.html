@@ -234,67 +234,16 @@ body {
 <body>
 <div class="sidebar">
     <div class="sidebar-logo">
-        <h1>广东省文化馆</h1>
-        <span>非遗数字化保护平台</span>
+        <h1>数据集管理平台</h1>
     </div>
     <div class="sidebar-nav">
-        <div class="nav-item"><span class="icon">◈</span><span class="text">工作台</span></div>
-        <div class="nav-item"><span class="icon">☰</span><span class="text">数字资源库</span></div>
-        <div class="nav-item"><span class="icon">▦</span><span class="text">非遗数据集</span></div>
-        <div class="nav-item active"><span class="icon">▤</span><span class="text">专题库</span></div>
-        <div class="nav-sub">
-            <div class="nav-sub-item" onclick="location.href='专题卡片列表.html'"><span class="dot"></span><span>专题视图</span></div>
-            <div class="nav-sub-item" onclick="location.href='专题详情.html'"><span class="dot"></span><span>数据浏览</span></div>
-        </div>
-        <div class="nav-item"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
     </div>
-    <div class="sidebar-footer">
-        <div class="user-info"><div class="user-avatar">陈</div><div><div class="user-name">陈敏</div><div class="user-role">非遗保护专员</div></div></div>
-    </div>
+</div>
 </div>
 <div class="main">
-    <div class="topbar">
-        <div class="topbar-title" id="pageTitle">数据详情</div>
-        <div class="topbar-actions"><button class="btn btn-default btn-compact" onclick="history.back()">返回</button></div>
-    </div>
-    <div class="content">
-        <div class="card">
-            <div class="card-header"><h3 id="dataName">加载中...</h3></div>
-            <div class="detail-layout">
-                <div class="preview-panel">
-                    <div class="section-title">原始数据预览</div>
-                    <div class="preview-content" id="previewContent">加载中...</div>
-                    <div style="margin-top:16px;"><div class="info-row"><div class="info-label">数据编号</div><div class="info-value" id="dataId"></div></div><div class="info-row"><div class="info-label">资源类型</div><div class="info-value" id="dataType"></div></div><div class="info-row"><div class="info-label">来源机构</div><div class="info-value" id="dataSource"></div></div><div class="info-row"><div class="info-label">收录时间</div><div class="info-value" id="dataTime"></div></div></div>
-                </div>
-                <div class="annotation-panel">
-                    <div class="section-title">标注结果</div>
-                    <div id="annotationList">加载中...</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<script>
-const urlParams = new URLSearchParams(window.location.search);
-const dataId = urlParams.get('id') || 'ICH-001';
-const topicId = urlParams.get('topicId') || 'GD-ICH-001';
-const dirName = urlParams.get('dir') || '全部';
-const sampleData = {
-    "ICH-001": { name: "广东音乐·赛龙夺锦", type: "音频", source: "广东省文化馆", time: "2024-03-15", preview: "【音频元数据】\n曲目名称：赛龙夺锦\n演奏形式：民乐合奏\n时长：6分32秒\n采样率：44.1kHz\n比特率：320kbps\n\n【内容摘要】\n广东音乐经典曲目，描绘端午节龙舟竞渡的热烈场面，旋律激昂奋进。\n\n【数字化信息】\n数字化时间：2024-03-15\n数字化负责人：陈敏\n保存格式：MP3 / WAV", annotations: [{ label: "非遗类别", value: "传统音乐 - 广东音乐", confidence: "0.98" },{ label: "传承人", value: "余其伟", confidence: "0.95" },{ label: "时代背景", value: "20世纪30年代创作", confidence: "0.92" },{ label: "艺术特点", value: "高胡领奏，节奏明快，运用'催马'技法表现竞渡场景", confidence: "0.96" }] },
-    "ICH-002": { name: "潮州工夫茶艺", type: "视频", source: "潮州非遗中心", time: "2024-02-10", preview: "【视频元数据】\n时长：45分钟\n分辨率：1920x1080\n帧率：25fps\n编码：H.264\n\n【内容说明】\n记录潮州工夫茶二十一式完整流程，包括备器、纳茶、候汤、冲点、淋罐、烫杯、洒茶等工序。", annotations: [{ label: "非遗类别", value: "民俗 - 茶艺", confidence: "0.99" },{ label: "相关非遗项目", value: "潮州工夫茶艺（国家级非遗）", confidence: "0.98" },{ label: "关键工序标注", value: "关公巡城、韩信点兵", confidence: "0.97" }] }
-};
-const data = sampleData[dataId] || { name: dataId, type: "文档", source: "广东省文化馆", time: "2024-01-01", preview: "暂无原始数据预览", annotations: [{ label: "备注", value: "该资源暂无标注信息", confidence: "1.0" }] };
-document.getElementById("pageTitle").innerHTML = `数据详情 / ${data.name}`;
-document.getElementById("dataName").innerHTML = data.name;
-document.getElementById("previewContent").innerHTML = data.preview;
-document.getElementById("dataId").innerHTML = dataId;
-document.getElementById("dataType").innerHTML = data.type;
-document.getElementById("dataSource").innerHTML = data.source;
-document.getElementById("dataTime").innerHTML = data.time;
-const annoContainer = document.getElementById("annotationList");
-annoContainer.innerHTML = "";
-data.annotations.forEach(anno => { annoContainer.innerHTML += `<div class="annotation-item"><div class="annotation-label">${anno.label}</div><div>${anno.value}</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:6px;">置信度: ${anno.confidence}</div></div>`; });
-if(data.annotations.length === 0) annoContainer.innerHTML = '<div class="annotation-item">暂无标注数据</div>';
-</script>
-</body>
-</html>

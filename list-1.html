@@ -204,156 +204,17 @@
 
 <!-- 侧边栏 -->
 <div class="sidebar">
-<div class="sidebar-logo">
-<h1>数据集管理平台</h1>
-<span>高质量数据集</span>
-</div>
-<div class="sidebar-nav">
-<a class="nav-item" href="工作台.html"><span class="icon">◈</span><span class="text">工作台</span></a>
-<div class="nav-group">
-<a class="nav-item has-sub open" href="数据资源.html"><span class="icon">☰</span><span class="text">数据资源</span><span class="arrow">▶</span></a>
-<div class="nav-sub-list open">
-<a class="nav-sub-item" href="系统导入.html">系统导入</a>
-<a class="nav-sub-item" href="中台导入.html">中台导入</a>
-<a class="nav-sub-item" href="本地导入.html">本地导入</a>
-<a class="nav-sub-item" href="互联网采集.html">互联网采集</a>
-<a class="nav-sub-item" href="资源存储.html">资源存储</a>
-</div>
-</div>
-<div class="nav-group">
-<a class="nav-item has-sub open" href="数据集管理.html"><span class="icon">▦</span><span class="text">数据集管理</span><span class="arrow">▶</span></a>
-<div class="nav-sub-list open">
-<a class="nav-sub-item" href="原始数据集.html">原始数据集</a>
-<a class="nav-sub-item" href="标注数据集.html">标注数据集</a>
-</div>
-</div>
-<div class="nav-group">
-<a class="nav-item has-sub open" href="标注中心.html"><span class="icon">✎</span><span class="text">标注中心</span><span class="arrow">▶</span></a>
-<div class="nav-sub-list open">
-<a class="nav-sub-item" href="任务管理.html">任务管理</a>
-<a class="nav-sub-item" href="标注大厅.html">标注大厅</a>
-<a class="nav-sub-item" href="模板管理.html">模板管理</a>
-</div>
-</div>
-<div class="nav-group">
-<a class="nav-item has-sub open" href="专题库.html"><span class="icon">▤</span><span class="text">专题库</span><span class="arrow">▶</span></a>
-<div class="nav-sub-list open">
-<a class="nav-sub-item" href="专题管理.html">专题管理</a>
-<a class="nav-sub-item" href="专题视图.html">专题视图</a>
-</div>
-</div>
-<a class="nav-item" href="系统设置.html"><span class="icon">⚙</span><span class="text">系统设置</span></a>
+    <div class="sidebar-logo">
+        <h1>数据集管理平台</h1>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
+    </div>
 </div>
 </div>
 <div class="main">
-    <div class="topbar">
-        <div class="topbar-breadcrumb">
-            <span>数据资源 / 系统导入</span>
-        </div>
-        <div class="topbar-actions">
-            <button class="btn btn-default">🔔 <span style="background:var(--error);color:#fff;border-radius:9px;padding:0 5px;font-size:11px;margin-left:4px;">3</span></button>
-            <button class="btn btn-default">⚙ 设置</button>
-        </div>
-    </div>
-
-    <div class="content">
-        <div class="card">
-            <div class="card-title">
-                <span>系统导入配置</span>
-                <button class="btn btn-primary" onclick="window.location.href='system_import_add.html'" style="height:28px;font-size:12px;">+ 新增配置</button>
-            </div>
-            <div class="overview-table">
-                <table>
-                    <thead>
-                        <tr><th>配置名称</th><th>数据源类型</th><th>数据源地址</th><th>认证方式</th><th>同步频率</th><th>状态</th><th>操作</th></tr>
-                    </thead>
-                    <tbody id="import-table-body">
-                        <!-- 动态渲染列表 -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // 模拟存储数据（实际可与新增页面共用localStorage或后端）
-    let importConfigs = [
-        { id: '1', name: '文化馆公众号采集', type: '公众号', address: 'gh_xxxxxx', auth: 'Cookie', frequency: '每日定时', status: '进行中' },
-        { id: '2', name: '文化局新闻网站采集', type: '新闻', address: 'https://culture.gd.gov.cn/news', auth: '无需认证', frequency: '每小时', status: '运行中' },
-        { id: '3', name: '文化活动微博话题采集', type: '微博', address: '#传统文化活动#', auth: 'API Key', frequency: '每日定时', status: '已暂停' }
-    ];
-
-    function loadData() {
-        // 尝试从 localStorage 读取数据，实现跨页面数据同步
-        const stored = localStorage.getItem('sys_import_configs');
-        if (stored) {
-            try {
-                importConfigs = JSON.parse(stored);
-            } catch(e) {}
-        }
-        renderTable();
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById('import-table-body');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        importConfigs.forEach(item => {
-            let statusClass = '';
-            if (item.status === '进行中' || item.status === '运行中') statusClass = 'status-ing';
-            else if (item.status === '已暂停') statusClass = 'status-wait';
-            else statusClass = 'status-done';
-            
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="font-weight:500;">${escapeHtml(item.name)}</td>
-                <td><span class="status-tag status-done" style="font-size:11px;">${escapeHtml(item.type)}</span></td>
-                <td style="font-size:12px;color:var(--text-secondary);">${escapeHtml(item.address)}</td>
-                <td style="font-size:12px;">${escapeHtml(item.auth)}</td>
-                <td style="font-size:12px;">${escapeHtml(item.frequency)}</td>
-                <td><span class="status-tag ${statusClass}">${escapeHtml(item.status)}</span></td>
-                <td>
-                    <span class="action-link" onclick="editConfig('${item.id}')">编辑</span>
-                    <span class="action-link" onclick="deleteConfig('${item.id}')" style="color:var(--error);">删除</span>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-        // 保存到 localStorage 保持同步
-        localStorage.setItem('sys_import_configs', JSON.stringify(importConfigs));
-    }
-
-    function editConfig(id) {
-        // 跳转到新增页面并携带编辑参数
-        window.location.href = `system_import_add.html?edit=${id}`;
-    }
-
-    function deleteConfig(id) {
-        if (confirm('确定删除该配置吗？')) {
-            importConfigs = importConfigs.filter(c => c.id !== id);
-            renderTable();
-        }
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // 监听存储变化，实现跨标签页同步（可选）
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'sys_import_configs') {
-            loadData();
-        }
-    });
-
-    loadData();
-</script>
-</body>
-</html>

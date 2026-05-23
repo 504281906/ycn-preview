@@ -313,145 +313,16 @@ body {
 <body>
 <div class="sidebar">
     <div class="sidebar-logo">
-        <h1>数据平台</h1>
-        <span>高质量数据集</span>
+        <h1>数据集管理平台</h1>
     </div>
     <div class="sidebar-nav">
-        <div class="nav-item"><span class="icon">◈</span><span class="text">工作台</span></div>
-        <div class="nav-item"><span class="icon">☰</span><span class="text">数据资源</span></div>
-        <div class="nav-item"><span class="icon">▦</span><span class="text">数据集管理</span></div>
-        <div class="nav-item active"><span class="icon">▤</span><span class="text">专题库</span></div>
-        <div class="nav-sub">
-            <div class="nav-sub-item" onclick="location.href='专题列表.html'"><span class="dot"></span><span>专题列表</span></div>
-            <div class="nav-sub-item active" onclick="location.href='新增专题.html'"><span class="dot"></span><span>新增专题</span></div>
-            <div class="nav-sub-item" onclick="location.href='数据维护.html'"><span class="dot"></span><span>数据维护</span></div>
-        </div>
-        <div class="nav-item"><span class="icon">⚙</span><span class="text">系统设置</span></div>
-    </div>
-    <div class="sidebar-footer">
-        <div class="user-info">
-            <div class="user-avatar">张</div>
-            <div><div class="user-name">张三</div><div class="user-role" id="roleDisplay">管理员</div></div>
-        </div>
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
     </div>
 </div>
-
+</div>
 <div class="main">
-    <div class="topbar">
-        <div class="topbar-title">专题库 / <span id="pageTitle">新建专题</span></div>
-        <div class="topbar-actions">
-            <button class="btn btn-default btn-compact">通知</button>
-            <button class="btn btn-default btn-compact" id="switchRoleBtn">切换角色</button>
-        </div>
-    </div>
-    <div class="content">
-        <div class="card">
-            <div class="card-header">
-                <h3 id="cardTitle">新建专题</h3>
-                <button class="btn btn-default btn-compact" onclick="location.href='专题列表.html'">返回列表</button>
-            </div>
-            <div id="addPermissionTip" class="permission-tip" style="display: none;">您没有新增/编辑专题的权限，请联系管理员</div>
-            <div style="padding: 24px;">
-                <div class="form-group">
-                    <label>专题名称 <span class="required">*</span></label>
-                    <input type="text" id="topicNameInput" class="form-control" style="width: 400px;" placeholder="请输入专题名称">
-                </div>
-                <div class="form-group">
-                    <label>图标标识</label>
-                    <input type="text" id="topicIconInput" class="form-control" style="width: 400px;" placeholder="如: 专 / 文" value="专">
-                </div>
-                <div class="form-group">
-                    <label>可见范围</label>
-                    <select id="topicScopeInput" class="filter-select" style="width: 200px;">
-                        <option value="公开">公开</option>
-                        <option value="仅团队">仅团队</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>状态</label>
-                    <select id="topicStatusInput" class="filter-select" style="width: 200px;">
-                        <option value="启用">启用</option>
-                        <option value="停用">停用</option>
-                    </select>
-                </div>
-                <div style="margin-top: 24px;">
-                    <button class="btn btn-primary" id="submitBtn">提交保存</button>
-                    <button class="btn btn-default" onclick="location.href='专题列表.html'" style="margin-left: 12px;">取消</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-let currentRole = "admin";
-function canAdd() { return currentRole === 'admin' || currentRole === 'editor'; }
-function getRoleText() { return currentRole === 'admin' ? '管理员' : (currentRole === 'editor' ? '编辑员' : '只读用户'); }
-
-function getTopics() { return JSON.parse(localStorage.getItem('topics')) || []; }
-function saveTopics(topics) { localStorage.setItem('topics', JSON.stringify(topics)); }
-
-let editId = localStorage.getItem('editTopicId');
-let isEdit = !!editId;
-
-if (isEdit) {
-    document.getElementById("pageTitle").innerText = "编辑专题";
-    document.getElementById("cardTitle").innerText = "编辑专题";
-    document.getElementById("submitBtn").innerText = "更新保存";
-    let topics = getTopics();
-    let topic = topics.find(t => t.id === editId);
-    if (topic) {
-        document.getElementById("topicNameInput").value = topic.name;
-        document.getElementById("topicIconInput").value = topic.icon;
-        document.getElementById("topicScopeInput").value = topic.scope;
-        document.getElementById("topicStatusInput").value = topic.status;
-    }
-}
-
-function saveTopic() {
-    if (!canAdd()) return alert("无权限新增/编辑");
-    let name = document.getElementById("topicNameInput").value.trim();
-    if (!name) return alert("专题名称不能为空");
-    let icon = document.getElementById("topicIconInput").value.trim() || "专";
-    let scope = document.getElementById("topicScopeInput").value;
-    let status = document.getElementById("topicStatusInput").value;
-    
-    let topics = getTopics();
-    if (isEdit) {
-        let idx = topics.findIndex(t => t.id === editId);
-        if (idx !== -1) {
-            topics[idx] = { ...topics[idx], name, icon, scope, status };
-        }
-        localStorage.removeItem('editTopicId');
-    } else {
-        let newId = "TOPIC-" + Date.now().toString().slice(-6);
-        topics.push({ id: newId, name, icon, datasetCount: 0, totalRows: 0, scope, status });
-        // 初始化数据维护结构
-        let maintainData = { dirs: ["全部数据"], data: { "全部数据": [] } };
-        localStorage.setItem(`maintainData_${newId}`, JSON.stringify(maintainData));
-    }
-    saveTopics(topics);
-    location.href = '专题列表.html';
-}
-
-function updateRoleUI() {
-    document.getElementById("roleDisplay").innerText = getRoleText();
-    document.getElementById("addPermissionTip").style.display = !canAdd() ? "block" : "none";
-    document.getElementById("submitBtn").disabled = !canAdd();
-}
-
-function switchRole() {
-    let roles = ["admin", "editor", "viewer"];
-    let idx = roles.indexOf(currentRole);
-    currentRole = roles[(idx + 1) % 3];
-    updateRoleUI();
-    alert(`角色已切换为: ${getRoleText()}`);
-}
-
-document.getElementById("submitBtn").onclick = saveTopic;
-document.getElementById("switchRoleBtn").onclick = switchRole;
-
-updateRoleUI();
-</script>
-</body>
-</html>

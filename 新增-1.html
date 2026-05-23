@@ -88,149 +88,17 @@
 <body>
 
 <div class="sidebar">
-    <div class="sidebar-logo"><h1>数据平台</h1><span>高质量数据集</span></div>
+    <div class="sidebar-logo">
+        <h1>数据集管理平台</h1>
+    </div>
     <div class="sidebar-nav">
-        <div class="nav-item"><span class="icon">◈</span><span class="text">工作台</span></div>
-        <div class="nav-item has-sub open"><span class="icon">☰</span><span class="text">数据资源</span><span class="arrow">›</span></div>
-        <div class="nav-sub-list open" style="display:block;">
-            <div class="nav-sub-item"><span class="dot"></span>系统导入</div>
-            <div class="nav-sub-item"><span class="dot"></span>中台导入</div>
-            <div class="nav-sub-item"><span class="dot"></span>本地导入</div>
-            <div class="nav-sub-item active"><span class="dot"></span>互联网采集</div>
-            <div class="nav-sub-item"><span class="dot"></span>资源存储</div>
-        </div>
-        <div class="nav-item has-sub"><span class="icon">▦</span><span class="text">数据集管理</span><span class="arrow">›</span></div>
-        <div class="nav-item has-sub"><span class="icon">✎</span><span class="text">标注中心</span><span class="arrow">›</span></div>
-        <div class="nav-item has-sub"><span class="icon">▤</span><span class="text">专题库</span><span class="arrow">›</span></div>
-        <div class="nav-item has-sub"><span class="icon">⚙</span><span class="text">系统设置</span><span class="arrow">›</span></div>
-    </div>
-    <div class="sidebar-footer">
-        <div class="user-info"><div class="user-avatar">张</div><div><div class="user-name">张三</div><div class="user-role">标注员</div></div></div>
+        <div class="nav-item" onclick="location.href='工作台.html'"><span class="icon">◈</span><span class="text">工作台</span></div>
+        <div class="nav-item" onclick="location.href='数据资源.html'"><span class="icon">☰</span><span class="text">数据资源</span></div>
+        <div class="nav-item" onclick="location.href='数据集管理.html'"><span class="icon">▦</span><span class="text">数据集管理</span></div>
+        <div class="nav-item" onclick="location.href='标注中心.html'"><span class="icon">✎</span><span class="text">标注中心</span></div>
+        <div class="nav-item" onclick="location.href='专题库.html'"><span class="icon">▤</span><span class="text">专题库</span></div>
+        <div class="nav-item" onclick="location.href='系统设置.html'"><span class="icon">⚙</span><span class="text">系统设置</span></div>
     </div>
 </div>
-
+</div>
 <div class="main">
-    <div class="topbar">
-        <div class="topbar-breadcrumb"><span><a href="internet_collect_list.html">数据资源 / 互联网采集</a> / 新建采集任务</span></div>
-        <div class="topbar-actions"><button class="btn btn-default">🔔 <span class="badge">3</span></button><button class="btn btn-default">⚙ 设置</button></div>
-    </div>
-    <div class="content">
-        <form id="collect-form">
-            <div class="form-section">
-                <div class="form-section-title">基本信息</div>
-                <div class="form-row">
-                    <div class="form-group"><label class="form-label">任务名称 <span class="required">*</span></label><input class="form-input" id="task-name" placeholder="请输入任务名称"></div>
-                    <div class="form-group"><label class="form-label">数据源类型 <span class="required">*</span></label><select class="form-select" id="task-source"><option value="">请选择数据源</option><option value="微博">微博</option><option value="新闻网站">新闻网站</option><option value="公众号">公众号</option><option value="抖音">抖音</option><option value="小红书">小红书</option></select></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label class="form-label">数据源地址</label><input class="form-input" id="task-url" placeholder="如：https://weibo.com/u/xxx"></div>
-                    <div class="form-group"><label class="form-label">采集频率 <span class="required">*</span></label><select class="form-select" id="task-freq"><option value="每小时">每小时</option><option value="每6小时">每6小时</option><option value="每日" selected>每日</option><option value="手动">手动</option></select></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label class="form-label">认证方式</label><select class="form-select" id="task-auth"><option value="无需认证">无需认证</option><option value="Cookie">Cookie</option><option value="API Key">API Key</option></select></div>
-                    <div class="form-group"><label class="form-label">认证凭证</label><input class="form-input" type="password" id="task-cred" placeholder="输入认证信息"></div>
-                </div>
-            </div>
-            <div class="form-section">
-                <div class="form-section-title">关键词订阅</div>
-                <div class="form-group full"><label class="form-label">关键词（多个用逗号分隔）<span class="required">*</span></label><input class="form-input" id="task-keywords" placeholder="例如：文化活动, 非遗传承, 传统文化" value="传统文化活动, 非遗传承"><div class="form-hint">系统将仅采集包含这些关键词的内容</div></div>
-                <div class="form-row"><div class="form-group"><label class="form-label">排除关键词</label><input class="form-input" id="task-exclude" placeholder="不想采集的内容"></div><div class="form-group"><label class="form-label">语言</label><select class="form-select" id="task-lang"><option value="中文" selected>中文</option><option value="英文">英文</option></select></div></div>
-            </div>
-            <div class="form-section">
-                <div class="form-section-title">情感分析与预警</div>
-                <div class="form-row">
-                    <div class="form-group"><label class="form-label">情感分析</label><select class="form-select" id="task-sentiment"><option value="启用" selected>启用</option><option value="禁用">禁用</option></select></div>
-                    <div class="form-group"><label class="form-label">预警阈值</label><div style="display:flex;align-items:center;gap:8px;"><input class="form-input" type="number" id="task-threshold" value="80" style="width:100px;"><span style="font-size:13px;">% 负面情感比例超过时告警</span></div></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label class="form-label">预警通知方式</label><div class="checkbox-grid" id="notify-ways"><div class="checkbox-item checked" data-value="邮件" onclick="toggleCheckbox(this)"><span class="check">✓</span> 邮件</div><div class="checkbox-item" data-value="短信" onclick="toggleCheckbox(this)"><span class="check"></span> 短信</div><div class="checkbox-item checked" data-value="系统通知" onclick="toggleCheckbox(this)"><span class="check">✓</span> 系统通知</div></div></div>
-                    <div class="form-group"><label class="form-label">预警通知人</label><input class="form-input" id="task-notify-users" placeholder="通知对象，多个用逗号分隔" value="张三, 李四"></div>
-                </div>
-            </div>
-            <div class="form-section">
-                <div class="form-section-title">执行策略</div>
-                <div class="form-row">
-                    <div class="form-group"><label class="form-label">失败重试策略</label><select class="form-select" id="retry-count"><option value="3" selected>自动重试 3 次</option><option value="5">5次</option><option value="0">不重试</option></select></div>
-                    <div class="form-group"><label class="form-label">重试间隔</label><select class="form-select" id="retry-interval"><option value="15分钟" selected>15分钟</option><option value="5分钟">5分钟</option><option value="30分钟">30分钟</option></select></div>
-                </div>
-                <div class="form-row"><div class="form-group"><label class="form-label">数据去重</label><select class="form-select" id="dedup"><option value="按主键去重">按主键去重</option><option value="按内容去重">按内容去重</option></select></div><div class="form-group"><label class="form-label">最大采集条数/次</label><input class="form-input" type="number" id="max-limit" placeholder="不填则不限制" value="500"></div></div>
-            </div>
-            <div class="form-actions">
-                <button type="button" class="btn btn-default" onclick="window.location.href='internet_collect_list.html'">取消</button>
-                <button type="button" class="btn btn-default" onclick="testConnection()">测试连接</button>
-                <button type="submit" class="btn btn-primary">保存并启动</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    let editingId = null;
-
-    function toggleCheckbox(el) {
-        el.classList.toggle('checked');
-        const span = el.querySelector('.check');
-        span.innerText = el.classList.contains('checked') ? '✓' : '';
-    }
-
-    function testConnection() { alert('测试连接中...\n（演示模式）'); }
-
-    function loadEditData() {
-        const params = new URLSearchParams(window.location.search);
-        const editId = params.get('edit');
-        if (!editId) return;
-        editingId = editId;
-        const stored = localStorage.getItem('internet_collect_tasks');
-        if (stored) {
-            const tasks = JSON.parse(stored);
-            const task = tasks.find(t => t.id === editId);
-            if (task) {
-                document.getElementById('task-name').value = task.name;
-                document.getElementById('task-source').value = task.source;
-                document.getElementById('task-keywords').value = task.keywords;
-                document.getElementById('task-threshold').value = task.threshold;
-                document.getElementById('task-freq').value = task.frequency;
-            }
-        }
-        document.querySelector('.form-section-title').innerText = '编辑采集任务';
-    }
-
-    function saveTask(e) {
-        e.preventDefault();
-        const name = document.getElementById('task-name').value.trim();
-        const source = document.getElementById('task-source').value;
-        const keywords = document.getElementById('task-keywords').value.trim();
-        const threshold = parseInt(document.getElementById('task-threshold').value);
-        const frequency = document.getElementById('task-freq').value;
-
-        if (!name) { alert('请输入任务名称'); return; }
-        if (!source) { alert('请选择数据源类型'); return; }
-        if (!keywords) { alert('请输入关键词'); return; }
-
-        let tasks = [];
-        const stored = localStorage.getItem('internet_collect_tasks');
-        if (stored) tasks = JSON.parse(stored);
-
-        if (editingId) {
-            const idx = tasks.findIndex(t => t.id === editingId);
-            if (idx !== -1) {
-                tasks[idx] = { ...tasks[idx], name, source, keywords, threshold, frequency };
-            }
-            alert('任务已更新');
-        } else {
-            const newId = 'COL-' + String(Date.now()).slice(-6);
-            const newTask = { id: newId, name, source, keywords, threshold, frequency, status: '采集中' };
-            tasks.unshift(newTask);
-            alert('采集任务已创建并启动');
-        }
-        localStorage.setItem('internet_collect_tasks', JSON.stringify(tasks));
-        window.location.href = 'internet_collect_list.html';
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        loadEditData();
-        document.getElementById('collect-form').addEventListener('submit', saveTask);
-    });
-</script>
-</body>
-</html>
